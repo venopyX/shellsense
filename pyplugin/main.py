@@ -1,9 +1,11 @@
-import sys
 import os
+import sys
+from pathlib import Path
 
-# Add the base directory to sys.path
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-sys.path.append(BASE_DIR)
+# Automatically detect the project root directory
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from pyplugin.utils.helper import OpenAIProvider, CloudflareProvider
 
