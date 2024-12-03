@@ -2,6 +2,7 @@ import os
 import requests
 import openai
 from config.config_loader import load_env
+from pyplugin.utils.instructions import SYSTEM_PROMPT
 
 class OpenAIProvider:
     def __init__(self):
@@ -13,7 +14,10 @@ class OpenAIProvider:
         try:
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}],
+                messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt}
+                ],
             )
             return response["choices"][0]["message"]["content"]
         except Exception as e:
@@ -33,13 +37,16 @@ class CloudflareProvider:
                 headers={"Authorization": f"Bearer {self.auth_token}"},
                 json={
                     "messages": [
-                        {"role": "system", "content": "You are a friendly assistant"},
+                        {"role": "system", "content": SYSTEM_PROMPT},
                         {"role": "user", "content": prompt},
                     ]
                 },
             )
             if response.status_code == 200:
-                return response.json().get("result", {}).get("choices", [{}])[0].get("message", {}).get("content", "No response.")
+                data = response.json()
+                # print(f"Full Response: {data}")  # Debug
+                # Access the correct field in the response
+                return data.get("result", {}).get("response", "No content returned by the API.")
             return f"Error: {response.status_code} - {response.text}"
         except Exception as e:
             return f"Error: {e}"

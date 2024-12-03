@@ -25,10 +25,11 @@ Intelligent Zsh plugin powered by AI, developed by using Python for streamlined 
    cp config/example.env .env
    ```
 
-4. Restart your terminal or source `.zshrc`.
+4. Restart your terminal or use `source ~/.zshrc`.
 
 ## Usage
-- Use `pyhello` to run a sample Python script.
+- Use `shellsense -c` or `shellsense --chat` to Chat with OpenAI models
+- Use `shellsense -cf` or `shellsense --cloudflare`  to Chat with Cloudflare's models
 
 ## Contributing
 Feel free to open issues or submit pull requests.
