@@ -1,0 +1,2 @@
+# shellsense
+Intelligent zsh plugin
