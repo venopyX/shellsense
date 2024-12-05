@@ -6,6 +6,7 @@ from tools.base_tool import BaseTool
 class CommandExecutionTool(BaseTool):
     """
     A tool to execute shell commands, create files/folders, and handle operations in the user's home directory.
+    Use this tool, if user needs to know about their computer or wants you to interact with the computer!
 
     Input:
     - commands (list or string): A list of valid shell commands to execute sequentially or a single string containing commands separated by '&&'.

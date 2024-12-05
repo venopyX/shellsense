@@ -19,78 +19,80 @@ ShellSense is an intelligent Zsh plugin designed to enhance your terminal experi
 ## Installation
 
 1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/your-username/zsh-python-plugin.git
-   cd zsh-python-plugin
-   ```
+    ```bash
+    git clone https://github.com/your-username/zsh-python-plugin.git
+    cd zsh-python-plugin
+    ```
 
 2. **Run the Setup Script**:
-   ```bash
-   ./setup.sh
-   ```
+    ```bash
+    ./setup.sh
+    ```
 
 3. **Add Your `.env` Configurations**:
-   ```bash
-   cp config/example.env .env
-   ```
-### .env Variables:
-     | Variable                | Description                          |
-     |-------------------------|--------------------------------------|
-     | `OPENAI_API_KEY`        | OpenAI API key                      |
-     | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID               |
-     | `CLOUDFLARE_AUTH_TOKEN` | Cloudflare authentication token     |
-     | `ACCOUNT_ID`            | Cloudflare's unique account ID      |
-     | `API_TOKEN`             | Authentication token for tools      |
-     | `MODEL_NAME`            | Name of the AI model used in tools  |
+    ```bash
+    cp config/example.env .env
+    ```
+
+    ### `.env` Variables:
+
+    | Variable                | Description                                  |
+    |-------------------------|----------------------------------------------|
+    | `OPENAI_API_KEY`        | OpenAI API key                               |
+    | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID                         |
+    | `CLOUDFLARE_AUTH_TOKEN` | Cloudflare authentication token               |
+    | `ACCOUNT_ID`            | Cloudflare's unique account ID                |
+    | `API_TOKEN`             | Authentication token for tools                |
+    | `MODEL_NAME`            | Name of the AI model used in tools            |
 
 4. **Restart Your Terminal or Use**:
-   ```bash
-   source ~/.zshrc
-   ```
+    ```bash
+    source ~/.zshrc
+    ```
 
 ## Usage
 
 - **Chat with OpenAI Models**:
-  ```bash
-  shellsense -c "Your query here"
-  ```
+    ```bash
+    shellsense -c "Your query here"
+    ```
 
 - **Chat with Cloudflare's Models**:
-  ```bash
-  shellsense -cf "Your query here"
-  ```
+    ```bash
+    shellsense -cf "Your query here"
+    ```
 
 - **Process a Query with CopiloHero Tools**:
-  ```bash
-  shellsense -q "Your query here"
-  ```
+    ```bash
+    shellsense -q "Your query here"
+    ```
 
 ## Example Queries
 
 - **Retrieve GitHub User Info**:
-  ```bash
-  shellsense -q "Get information about the GitHub user 'octocat'."
-  ```
+    ```bash
+    shellsense -q "Get information about the GitHub user 'octocat'."
+    ```
 
 - **Get Current Stock Price**:
-  ```bash
-  shellsense -q "Get the current stock price of 'AAPL'."
-  ```
+    ```bash
+    shellsense -q "Get the current stock price of 'AAPL'."
+    ```
 
 - **Capture a Screenshot of a Webpage**:
-  ```bash
-  shellsense -q "Capture a screenshot of 'https://example.com'."
-  ```
+    ```bash
+    shellsense -q "Capture a screenshot of 'https://example.com'."
+    ```
 
 - **Fetch Trending Products from Product Hunt**:
-  ```bash
-  shellsense -q "Fetch trending products from Product Hunt."
-  ```
+    ```bash
+    shellsense -q "Fetch trending products from Product Hunt."
+    ```
 
 - **Perform a Google Search**:
-  ```bash
-  shellsense -q "Perform a Google search for 'latest tech news'."
-  ```
+    ```bash
+    shellsense -q "Perform a Google search for 'latest tech news'."
+    ```
 
 ## Contributing
 
