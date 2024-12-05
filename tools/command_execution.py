@@ -39,7 +39,7 @@ class CommandExecutionTool(BaseTool):
             dict: Status of the executed commands, including any errors or skipped commands.
         """
         # Debug: Print the input to ensure it is correctly formatted
-        print("Input received:", input_data)
+        # print("Input received:", input_data)
 
         # Retrieve commands and ensure they are in the correct format (list of commands)
         commands = input_data.get("commands", [])

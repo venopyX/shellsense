@@ -29,7 +29,7 @@ class FriendlyAiResponse:
         ]
 
         try:
-            print(f"User Query: {user_query}, Tool Output: {tool_output}")
+            # print(f"User Query: {user_query}, Tool Output: {tool_output}")
             # Sending request to AI API for refined response
             response = requests.post(
                 f"{Config.API_BASE_URL}@hf/mistral/mistral-7b-instruct-v0.2",
@@ -38,10 +38,11 @@ class FriendlyAiResponse:
             )
             response.raise_for_status()
             response_data = response.json()
-            print(f"AI API response data: {response_data}")
+            # print(f"AI API response data: {response_data}")
 
             # Extract the AI-generated friendly response
             if response_data.get('success', True):
+                print(response_data['result']['response'])
                 return response_data['result']['response']
             else:
                 print(f"AI API response error: {response_data.get('errors')}")

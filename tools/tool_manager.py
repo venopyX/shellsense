@@ -52,7 +52,7 @@ class ToolManager:
                 "description": tool_instance.__doc__ or "No description provided.",
                 "parameters": schema
             })
-        print(f"Prepared Tool Schemas: {tools_schema}")  # Debugging tool schema preparation
+        # print(f"Prepared Tool Schemas: {tools_schema}")  # Debugging tool schema preparation
         return tools_schema
 
     def process_query(self, user_query):
@@ -62,7 +62,7 @@ class ToolManager:
         # Generate available tool names dynamically
         tool_names = list(self.tool_mapping.keys())
         tool_names_str = f"Available tools: {tool_names}"
-        print(tool_names_str)
+        # print(tool_names_str)
 
         payload = {
             "messages": [
@@ -82,7 +82,7 @@ class ToolManager:
             response.raise_for_status()
             data = response.json()
             result = data.get("result", {})
-            print(f"Cloudflare API Response: {response.text}")  # Debugging Cloudflare response
+            # print(f"Cloudflare API Response: {response.text}")  # Debugging Cloudflare response
 
             # Handle tool calls if present
             tool_calls = result.get("tool_calls", [])
@@ -112,14 +112,14 @@ class ToolManager:
                 combined_tool_output = "\n\n".join(
                     f"Tool: {item['tool']}\nOutput: {item['output']}" for item in aggregated_output
                 )
-                print(f"Combined Tool Outputs: {combined_tool_output}")  # Debugging tool outputs
+                # print(f"Combined Tool Outputs: {combined_tool_output}")  # Debugging tool outputs
 
                 # Use AI to refine the aggregated tool outputs for user-friendly response
                 friendly_response = FriendlyAiResponse.get_friendly_response(
                     user_query=user_query,
                     tool_output=combined_tool_output
                 )
-                print(f"Friendly AI Response: {friendly_response}")  # Debugging AI refinement
+                # print(f"Friendly AI Response: {friendly_response}")  # Debugging AI refinement
                 return friendly_response
 
             # Check for direct AI response
@@ -159,7 +159,7 @@ class ToolManager:
         if tool_instance:
             try:
                 result = tool_instance.invoke(arguments)
-                print(f"Tool: {tool_name}, Result: {result}")  # Debugging tool invocation
+                # print(f"Tool: {tool_name}, Result: {result}")  # Debugging tool invocation
                 return result
             except Exception as e:
                 print(f"Error invoking tool '{tool_name}': {e}")

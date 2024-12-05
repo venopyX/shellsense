@@ -36,7 +36,7 @@ def main():
         print(response)
     elif args.query:
         tool_manager = ToolManager()
-        print("Processing your query with Cloudflare AI Function Calling...")
+        print("Processing your query usually takes few seconds to a minute based on query...")
         tool_manager.process_query(args.query)
     else:
         print("Error: No valid argument provided. Use -h or --help for usage.")
