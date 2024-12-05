@@ -2,7 +2,7 @@ import os
 import requests
 import openai
 from config.config_loader import load_env
-from pyplugin.utils.instructions import SYSTEM_PROMPT
+from pyplugin.utils.instruction import Instruction
 
 class OpenAIProvider:
     def __init__(self):
@@ -15,7 +15,7 @@ class OpenAIProvider:
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": Instruction.shellsense_ai()},
                 {"role": "user", "content": prompt}
                 ],
             )
@@ -37,7 +37,7 @@ class CloudflareProvider:
                 headers={"Authorization": f"Bearer {self.auth_token}"},
                 json={
                     "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "system", "content": Instruction.shellsense_ai()},
                         {"role": "user", "content": prompt},
                     ]
                 },

@@ -3,9 +3,15 @@
 echo "Installing Python dependencies..."
 
 # Use --break-system-packages to handle externally managed environments
-pip install -r requirements.txt --break-system-packages
+pip3 install -r requirements.txt --break-system-packages
+
+# if [[ "$(python3 -V 2>&1)" < "Python 3.8" ]]; then
+#     echo "Python 3.8 or higher is required. Please update your Python version."
+#     exit 1
+# fi
+
 if [ $? -ne 0 ]; then
-    echo "Error: Unable to install dependencies. Please ensure Python and pip are correctly installed."
+    echo "Error: Unable to install dependencies. Please ensure pip is correctly installed."
     exit 1
 fi
 

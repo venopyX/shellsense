@@ -1,3 +1,11 @@
 python-dotenv
 openai
 requests
+bs4
+selenium
+pillow
+googlesearch-python
+beautifulsoup4
+deep_translator
+yfinance
+wikipedia
