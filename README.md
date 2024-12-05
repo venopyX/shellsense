@@ -102,10 +102,6 @@ Feel free to fork this project, open issues, and submit pull requests. Contribut
 
 This project is licensed under the MIT License. See the `LICENSE` file for details.
 
-## Contact
-
-For any inquiries, please contact: [your-email@example.com](mailto:your-email@example.com)
-
 ## Future Features
 
 ShellSense is continuously evolving with many more features in development. Stay tuned for updates!
