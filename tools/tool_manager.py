@@ -11,6 +11,7 @@ from tools.wikipedia_search import WikipediaSearchTool
 from tools.coder import CoderTool
 from tools.github import GitHubTool
 from tools.generic_ai_response import GenericAiResponseTool
+from tools.command_execution import CommandExecutionTool
 
 class ToolManager:
     def __init__(self):
@@ -26,6 +27,7 @@ class ToolManager:
         Load all available tools into the tool mapping.
         """
         return {
+            "executeShellCommands": CommandExecutionTool(),
             "getGithubUserInfo": GitHubTool(),
             "getCurrentStockPrice": StockTool(),
             "performWebSearch": WebSearchTool(),
@@ -64,7 +66,7 @@ class ToolManager:
 
         payload = {
             "messages": [
-                {"role": "system", "content": f"You are shellsenseAI zsh assistant. Use the supplied tools to assist the user.\n\n{tool_names_str}"},
+                {"role": "system", "content": f"You are shellsenseAI zsh assistant. Use the supplied tools to assist the user.\n\n{tool_names_str}. \n\nTo use executeShellCommands tool, you must convert user's query into valid shell commands/script! Don't use 'cd' command since you can't cd into other folder, execute command with path directly instead!"},
                 {"role": "user", "content": user_query}
             ],
             "tools": self.prepare_tools_schema(),
