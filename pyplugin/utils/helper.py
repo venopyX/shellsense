@@ -1,33 +1,34 @@
-import os
-import requests
-import openai
-from config.config_loader import load_env
+from openai import OpenAI
+from config.settings import Config
 from pyplugin.utils.instruction import Instruction
+
 
 class OpenAIProvider:
     def __init__(self):
-        env = load_env()
-        self.api_key = env["OPENAI_API_KEY"]
-        openai.api_key = self.api_key
+        Config.validate()
+        self.API_KEY = Config.OPENAI_API_KEY
+        self.client = OpenAI()
 
     def chat(self, prompt):
         try:
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
+            self.client.api_key = self.API_KEY
+            response = self.client.chat.completions.create(
+                model="gpt-3.5-turbo-0125",
                 messages=[
-                {"role": "system", "content": Instruction.shellsense_ai()},
-                {"role": "user", "content": prompt}
-                ],
+                    {"role": "system", "content": Instruction.shellsense_ai()},
+                    {"role": "user", "content": prompt}
+                ]
             )
-            return response["choices"][0]["message"]["content"]
+            return response.choices[0].message["content"]
         except Exception as e:
             return f"Error: {e}"
 
+
 class CloudflareProvider:
     def __init__(self):
-        env = load_env()
-        self.account_id = env.get("CLOUDFLARE_ACCOUNT_ID")
-        self.auth_token = env.get("CLOUDFLARE_AUTH_TOKEN")
+        Config.validate()
+        self.account_id = Config.ACCOUNT_ID
+        self.auth_token = Config.API_TOKEN
         self.base_url = f"https://api.cloudflare.com/client/v4/accounts/{self.account_id}/ai/run/@hf/thebloke/llama-2-13b-chat-awq"
 
     def chat(self, prompt):
@@ -44,8 +45,6 @@ class CloudflareProvider:
             )
             if response.status_code == 200:
                 data = response.json()
-                # print(f"Full Response: {data}")  # Debug
-                # Access the correct field in the response
                 return data.get("result", {}).get("response", "No content returned by the API.")
             return f"Error: {response.status_code} - {response.text}"
         except Exception as e:

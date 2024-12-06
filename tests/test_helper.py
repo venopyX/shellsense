@@ -1,6 +1,6 @@
-from config.config_loader import load_env
+from config.settings import Config
 
-def test_load_env():
-    env = load_env()
-    assert "OPENAI_API_KEY" in env
-    assert isinstance(env["OPENAI_API_KEY"], str)
+def test_config():
+    assert Config.ACCOUNT_ID is not None
+    assert Config.API_TOKEN is not None
+    assert Config.MODEL_NAME is not None
