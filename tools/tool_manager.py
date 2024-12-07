@@ -1,17 +1,20 @@
 import requests
 from config.settings import Config
-from pyplugin.utils.friendly_ai import FriendlyAiResponse
-from tools.stock import StockTool
-from tools.websearch import WebSearchTool
-from tools.crawler import CrawlerTool
-from tools.producthunt import ProductHuntTool
-from tools.screenshoter import ScreenshotTool
-from tools.translator import TranslatorTool
-from tools.wikipedia_search import WikipediaSearchTool
-from tools.coder import CoderTool
-from tools.github import GitHubTool
-from tools.generic_ai_response import GenericAiResponseTool
-from tools.command_execution import CommandExecutionTool
+from prompts import tool_caller_ai
+from providers.friendly_ai_response import FriendlyAiResponse
+from tools import (
+    StockTool,
+    WebSearchTool,
+    CrawlerTool,
+    ProductHuntTool,
+    ScreenshotTool,
+    TranslatorTool,
+    WikipediaSearchTool,
+    CoderTool,
+    GitHubTool,
+    CommandExecutionTool,
+)
+
 
 class ToolManager:
     def __init__(self):
@@ -21,6 +24,7 @@ class ToolManager:
 
         # Initialize available tools
         self.tool_mapping = self.load_tools()
+        self.friendly_ai_response = FriendlyAiResponse()  # Create an instance of FriendlyAiResponse
 
     def load_tools(self):
         """
@@ -37,7 +41,6 @@ class ToolManager:
             "translateText": TranslatorTool(),
             "wikipediaSearch": WikipediaSearchTool(),
             "generateCode": CoderTool(),
-            "genericAiResponse": GenericAiResponseTool(),
         }
 
     def prepare_tools_schema(self):
@@ -46,11 +49,10 @@ class ToolManager:
         """
         tools_schema = []
         for tool_name, tool_instance in self.tool_mapping.items():
-            schema = tool_instance.get_schema()
             tools_schema.append({
                 "name": tool_name,
-                "description": tool_instance.__doc__ or "No description provided.",
-                "parameters": schema
+                "description": tool_instance.__doc__,
+                "parameters": tool_instance.get_schema()
             })
         # print(f"Prepared Tool Schemas: {tools_schema}")  # Debugging tool schema preparation
         return tools_schema
@@ -59,50 +61,50 @@ class ToolManager:
         """
         Process the user query by calling Cloudflare's API and handle both tool calls and direct responses.
         """
+
         # Generate available tool names dynamically
         tool_names = list(self.tool_mapping.keys())
         tool_names_str = f"Available tools: {tool_names}"
-        # print(tool_names_str)
+        # print(f"Tool Names: {tool_names_str}")
 
         payload = {
             "messages": [
-                {"role": "system", "content": f"You are shellsenseAI zsh assistant. Use the supplied tools to assist the user.\n\n{tool_names_str}. \n\nTo use executeShellCommands tool, you must convert user's query into valid shell commands/script! Don't use 'cd' command since you can't cd into other folder, execute command with path directly instead!"},
-                {"role": "user", "content": user_query}
+            {"role": "system", "content": tool_caller_ai(tool_names_str)},
+            {"role": "user", "content": user_query}
             ],
             "tools": self.prepare_tools_schema(),
-            "strict": True,
         }
+
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_token}",
         }
+
+        # print(f"Payload: {payload}")  # Debugging payload
+        # print(f"Headers: {headers}")  # Debugging headers
+
         try:
             # Call Cloudflare API to determine response
             response = requests.post(self.url, json=payload, headers=headers)
             response.raise_for_status()
+            print(f"Cloudflare API Response: {response.text}")  # Debugging Cloudflare response
+
             data = response.json()
             result = data.get("result", {})
-            # print(f"Cloudflare API Response: {response.text}")  # Debugging Cloudflare response
 
             # Handle tool calls if present
             tool_calls = result.get("tool_calls", [])
             if tool_calls:
+                # print(f"Tool Calls: {tool_calls}")  # Debugging tool calls
                 aggregated_output = []
                 for tool_call in tool_calls:
                     tool_name = tool_call.get("name")
                     arguments = tool_call.get("arguments", {})
-
-                    # Check for invalid or unmapped tool calls
-                    if tool_name not in self.tool_mapping:
-                        print(f"Invalid tool call: {tool_name}, Arguments: {arguments}")
-                        aggregated_output.append({
-                            "tool": tool_name,
-                            "output": {"error": f"Tool '{tool_name}' is not available."}
-                        })
-                        continue
+                    # print(f"Processing tool call: {tool_name} with arguments: {arguments}")  # Debugging tool call processing
 
                     # Invoke the tool
                     raw_tool_output = self.call_tool(tool_name, arguments)
+                    # print(f"Tool: {tool_name}, Raw Output: {raw_tool_output}")  # Debugging raw tool output
                     aggregated_output.append({
                         "tool": tool_name,
                         "output": raw_tool_output
@@ -112,10 +114,10 @@ class ToolManager:
                 combined_tool_output = "\n\n".join(
                     f"Tool: {item['tool']}\nOutput: {item['output']}" for item in aggregated_output
                 )
-                # print(f"Combined Tool Outputs: {combined_tool_output}")  # Debugging tool outputs
+                # print(f"Combined Tool Outputs: {combined_tool_output}")  # Debugging combined tool outputs
 
                 # Use AI to refine the aggregated tool outputs for user-friendly response
-                friendly_response = FriendlyAiResponse.get_friendly_response(
+                friendly_response = self.friendly_ai_response.get_friendly_response(
                     user_query=user_query,
                     tool_output=combined_tool_output
                 )
@@ -125,11 +127,9 @@ class ToolManager:
             # Check for direct AI response
             ai_response = result.get("response", None)
             if ai_response:
-                # print(f"Direct AI Response: {ai_response}")  # Debugging direct AI response
-                print({ai_response})
+                print(f"Direct AI Response: {ai_response}")  # Debugging direct AI response
                 return ai_response
 
-            # Fallback if no response is generated
             print("No response from tools or AI.")
             return "I'm sorry, I couldn't process your query."
 
@@ -148,18 +148,11 @@ class ToolManager:
         Returns:
             dict: Result from the tool function.
         """
-        # Map alternative names to canonical tool names
-        # canonical_tool_name = {
-        #     "githubSearchUser": "getGithubUserInfo",
-        #     "githubUserSearch": "getGithubUserInfo"
-        # }.get(tool_name, tool_name)  # Default to original name if not mapped.
-
-        # tool_instance = self.tool_mapping.get(canonical_tool_name)
         tool_instance = self.tool_mapping.get(tool_name)
         if tool_instance:
             try:
                 result = tool_instance.invoke(arguments)
-                # print(f"Tool: {tool_name}, Result: {result}")  # Debugging tool invocation
+                # print(f"Tool: {tool_name}, Result: {result}")  # Debugging tool invocation result
                 return result
             except Exception as e:
                 print(f"Error invoking tool '{tool_name}': {e}")

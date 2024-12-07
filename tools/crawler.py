@@ -6,13 +6,24 @@ from tools.base_tool import BaseTool
 
 class CrawlerTool(BaseTool):
     """
-    Scrapes visible text and metadata from a specified webpage URL.
+    Scrapes visible text and metadata from a webpage. 
+    This tool helps users understand the content of a webpage by extracting text from elements like paragraphs, 
+    headings, and emphasized text. It is useful for queries like "What does this URL contain?" or "Summarize this webpage."
+    By providing a URL, the tool parses the page and returns a summary of visible text. The output is concise, 
+    informative, and capped at 10,000 characters for readability.
     """
 
     def invoke(self, input: dict) -> dict:
         url = input.get("url")
         if not url:
             return {"error": "URL parameter is required."}
+
+        # Ensure the URL has a valid protocol (http/https)
+        if not url.startswith(('http://', 'https://')):
+            if url.startswith(('www.', '://')):
+                url = 'https://' + url
+            else:
+                url = 'https://' + url
 
         try:
             # Send a GET request to the URL
@@ -46,7 +57,7 @@ class CrawlerTool(BaseTool):
             "properties": {
                 "url": {
                     "type": "string",
-                    "description": "The URL of the webpage to scrape."
+                    "description": "The URL of the webpage to scrape. Ensure it starts with 'http://' or 'https://'."
                 }
             },
             "required": ["url"]
