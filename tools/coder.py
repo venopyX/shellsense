@@ -36,6 +36,7 @@ class CoderTool(BaseTool):
         response = self.cloudflare_provider.chat(messages)
         if response.get("error"):
             return {"error": response["error"]}
+        print(f"CODE: {response.get("result", {}).get("response", "No code generated.")}")
         return {"code_snippet": response.get("result", {}).get("response", "No code generated.")}
 
     def get_schema(self) -> dict:
