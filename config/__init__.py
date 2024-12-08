@@ -23,7 +23,7 @@ art = """
 """
 
 # Function to print with animation
-def print_with_animation(text, delay=0.005):
+def print_with_animation(text, delay=0.003):
     for char in text:
         sys.stdout.write(char)
         sys.stdout.flush()
@@ -60,4 +60,4 @@ print_with_animation(colors['cyan'] + art + colors['reset'])
 
 # Add a futuristic message
 message = "Welcome to the future of Terminal!"
-print_with_animation(colors['green'] + message + colors['reset'], delay=0.1)
+print_with_animation(colors['green'] + message + colors['reset'], delay=0.05)

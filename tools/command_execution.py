@@ -62,7 +62,7 @@ class CommandExecutionTool(BaseTool):
         safe_commands = [cmd for cmd in commands if cmd not in harmful_commands]
 
         # Display commands for user confirmation
-        print("Commands to execute:")
+        print("\nCommands to execute:")
         for cmd in commands:
             print(f"- {cmd} {'(Harmful)' if cmd in harmful_commands else ''}")
 
@@ -75,7 +75,7 @@ class CommandExecutionTool(BaseTool):
                 return {"error": "Execution aborted. Harmful commands detected."}
 
         # Prompt for user confirmation
-        proceed = input("\nDo you want to execute the commands? (yes/y to proceed, no/n to cancel): ").strip().lower()
+        proceed = input("\n\nDo you want to execute the commands? (yes/y to proceed, no/n to cancel): ").strip().lower()
         if proceed not in ["yes", "y"]:
             return {"message": "Execution canceled by the user."}
 

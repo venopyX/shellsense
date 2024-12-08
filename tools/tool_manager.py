@@ -41,7 +41,7 @@ class ToolManager:
             "getProductHuntTrending": ProductHuntTool(),
             "takeScreenshotOfWebPage": ScreenshotTool(),
             "translateText": TranslatorTool(),
-            "wikipediaSearch": WikipediaSearchTool(),
+            # "wikipediaSearch": WikipediaSearchTool(),
             "generateCode": CoderTool(),
         }
 
@@ -73,7 +73,7 @@ class ToolManager:
 
         payload = {
             "messages": [
-            {"role": "system", "content": system_prompt()},
+            {"role": "system", "content": f"This is system instruction for you to guide you: {system_prompt()}"},
             {"role": "system", "content": tool_caller_ai(tool_names_str)},
             {"role": "user", "content": user_query}
             ],
@@ -123,13 +123,14 @@ class ToolManager:
                 # print(f"Combined Tool Outputs: {combined_tool_output}")  # Debugging combined tool outputs
 
                 # Use AI to refine the aggregated tool outputs for user-friendly response
-                loader.text("Responding...", "CYAN")
+                loader.text("Analysing...", "CYAN")
                 friendly_response = self.friendly_ai_response.get_friendly_response(
                     user_query=user_query,
                     tool_output=combined_tool_output
                 )
                 # print(f"Friendly AI Response: {friendly_response}")  # Debugging AI refinement
                 loader.stop("Completed! ✅", "GREEN")
+                loader.clear()
                 return friendly_response
 
             # Check for direct AI response
@@ -140,9 +141,15 @@ class ToolManager:
                 loader.clear()
                 return ai_response
 
-            loader.stop("No Response! ⚠️", "YELLOW")
-            print("No response from tools or AI.")
-            return "I'm sorry, I couldn't process your query."
+            loader.text("No Response! ⚠️", "YELLOW")
+            friendly_response = self.friendly_ai_response.get_friendly_response(
+            user_query=user_query,
+            tool_output=response.text
+            )
+            # print(f"Friendly AI Response: {friendly_response}")  # Debugging AI refinement
+            loader.stop("Completed! ✅", "GREEN")
+            loader.clear()
+            return friendly_response
 
         except Exception as e:
             loader.stop("Failed! ❌", "RED")

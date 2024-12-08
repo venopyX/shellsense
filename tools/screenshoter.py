@@ -8,17 +8,28 @@ import time
 
 class ScreenshotTool(BaseTool):
     """
-    Captures a screenshot of a specified webpage URL.
+    Captures a screenshot of a given webpage URL using headless Chrome. 
+    Allows specifying the image file name (default: "screenshot.png")
+    use website name as image name. e.g. google.png for https://google.com
+    and browser window dimensions (default: 1920x1080) as width and height. 
+    The image is saved locally and verified for integrity.
     """
 
     def invoke(self, input: dict) -> dict:
         url = input.get("url")
-        output_path = input.get("output_path", "screenshot.png")
+        output_path = input.get("image_name", "screenshot.png")
         width = input.get("width", 1920)
         height = input.get("height", 1080)
 
         if not url:
             return {"error": "URL parameter is required."}
+
+        # Ensure the URL has a valid protocol (http/https)
+        if not url.startswith(('http://', 'https://')):
+            if url.startswith(('www.', '://')):
+                url = 'https://' + url
+            else:
+                url = 'https://' + url
 
         try:
             # Setup headless Chrome options
@@ -40,7 +51,7 @@ class ScreenshotTool(BaseTool):
             # Confirm screenshot creation
             image = Image.open(output_path)
             image.verify()
-            return {"status": "success", "path": output_path}
+            return {"status": "success", "message": f"Screenshot successfully taken and saved as {output_path}"}
         except Exception as e:
             return {"error": f"Exception during screenshot capture: {str(e)}"}
 
@@ -55,9 +66,9 @@ class ScreenshotTool(BaseTool):
                     "type": "string",
                     "description": "The URL of the webpage to capture(start with http:// or https://)."
                 },
-                "output_path": {
+                "image_name": {
                     "type": "string",
-                    "description": "The file path where the screenshot will be saved. use name of website as file name",
+                    "description": "The image file name or path of the screenshot. use name of website as file name",
                     "default": "screenshot.png"
                 },
                 "width": {

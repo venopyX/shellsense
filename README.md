@@ -2,15 +2,22 @@
 
 ## Overview
 
-ShellSense is an advanced, futuristic Zsh terminal plugin designed to integrate intelligent AI capabilities directly into your command-line interface. This plugin leverages state-of-the-art AI models and a suite of powerful tools to provide expert assistance for a wide range of tasks, from Linux terminal mastery to programming support and beyond.
+ShellSense is an advanced, futuristic Zsh terminal plugin designed to integrate intelligent AI capabilities directly into your command-line interface. This plugin leverages state-of-the-art AI models and a suite of powerful tools to provide expert assistance for a wide range of tasks.
 
-## Features
+## Key Features
 
-- **Linux Terminal Mastery**: Solve zsh issues, recommend commands, scripts, and shortcuts, and assist with zsh configuration and optimization.
-- **Programming Support**: Debug code, solve programming challenges, and provide optimized code snippets and best practices.
-- **Cybersecurity Guidance**: Advise on ethical hacking, penetration testing, and system hardening.
-- **Tech Knowledge**: Explain concepts, tools, and techniques across AI, science, and technology.
-- **Integrated Tools**: Utilize a variety of tools for web searches, stock analysis, GitHub user info, product trends, and more.
+- **AI Assistant in the Terminal**: Get expert assistance directly in your Zsh terminal for various tasks.
+- **Integrated Tools**:
+  - **WebSearchTool**: Perform web searches.
+  - **CrawlerTool**: Scrape webpage content.
+  - **ProductHuntTool**: Get trending products.
+  - **ScreenshotTool**: Capture webpage screenshots.
+  - **TranslatorTool**: Translate text.
+  - **WikipediaSearchTool**: Search Wikipedia.
+  - **CoderTool**: Generate code snippets.
+  - **GitHubTool**: Fetch GitHub user info.
+  - **CommandExecutionTool**: Execute shell commands.
+  - **StockTool**: Fetch stock data.
 
 ## Installation
 
@@ -18,6 +25,7 @@ ShellSense is an advanced, futuristic Zsh terminal plugin designed to integrate 
 
 - Python 3.8 or higher
 - Zsh shell
+- ChromeDriver installed and path set up for the **ScreenshotTool** to function properly.
 
 ### Steps
 
@@ -61,27 +69,6 @@ ShellSense is an advanced, futuristic Zsh terminal plugin designed to integrate 
 - **sscfchat**: Alias for `shellsense -cf`.
 - **ssai**: Alias for `shellsense -q`.
 
-#### Example:
-- Using `ssai` instead of `shellsense -q`
-  ```sh
-  ssai "Who is venopyx on github"
-  ```
-
-## Tools
-
-ShellSense comes with a variety of integrated tools to enhance your terminal experience:
-
-- **StockTool**: Fetch current stock prices, company profiles, and analyst recommendations.
-- **WebSearchTool**: Perform Google searches and retrieve top results.
-- **CrawlerTool**: Scrape visible text and metadata from webpages.
-- **ProductHuntTool**: Retrieve top trending products from Product Hunt.
-- **ScreenshotTool**: Capture screenshots of webpages.
-- **TranslatorTool**: Translate text between different languages.
-- **WikipediaSearchTool**: Perform Wikipedia searches and return relevant pages.
-- **CoderTool**: Generate concise, well-structured code snippets.
-- **GitHubTool**: Fetch publicly available information about GitHub users.
-- **CommandExecutionTool**: Execute shell commands and handle file/folder operations.
-
 ## Configuration
 
 Configure your environment variables in the `config/example.env` file:
@@ -89,9 +76,9 @@ Configure your environment variables in the `config/example.env` file:
 ```env
 CLOUDFLARE_ACCOUNT_ID=your-cloudflare-account-id
 CLOUDFLARE_AUTH_TOKEN=your-cloudflare-auth-token
-OPENAI_API_KEY=your-openai-api-key [OPTIONAL]
-FUNCTION_CALL_MODEL=@hf/nousresearch/hermes-2-pro-mistral-7b [OPTIONAL]
-FRIENDLY_RESPONSE_MODEL=@hf/mistral/mistral-7b-instruct-v0.2 [OPTIONAL]
+OPENAI_API_KEY=your-openai-api-key-here-you-can-skip-this
+FUNCTION_CALL_MODEL=@hf/nousresearch/hermes-2-pro-mistral-7b
+FRIENDLY_RESPONSE_MODEL=@hf/mistral/mistral-7b-instruct-v0.2
 ```
 
 ## Contributing
@@ -110,3 +97,9 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Contact
 
 For any questions or support, please open an issue on the GitHub repository or contact the maintainers directly.
+
+---
+
+![ShellSense UI Example](shellsense-home-screenshot.png)
+
+Experience the future of terminal interaction with ShellSense. Enhance your productivity and unlock new capabilities with intelligent AI integration.
