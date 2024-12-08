@@ -1,107 +1,112 @@
-# ShellSense: AI-Powered Zsh Plugin
+# ShellSense Plugin
 
-ShellSense is an intelligent Zsh plugin designed to enhance your terminal experience with powerful features and AI-powered capabilities. Developed using Python, ShellSense offers a streamlined workflow for various tasks, making your terminal more efficient and user-friendly.
+## Overview
+
+ShellSense is an advanced, futuristic Zsh terminal plugin designed to integrate intelligent AI capabilities directly into your command-line interface. This plugin leverages state-of-the-art AI models and a suite of powerful tools to provide expert assistance for a wide range of tasks, from Linux terminal mastery to programming support and beyond.
 
 ## Features
 
-- **AI-Powered Copilot**: Utilize AI models to assist with coding, debugging, and various terminal tasks.
-- **Integrates Python with Zsh**: Seamlessly blend the power of Python with Zsh for enhanced functionality.
-- **Modular and Scalable Design**: Easily extend and customize the plugin to fit your needs.
-- **Secure Environment Variable Management**: Safely manage and use environment variables.
-- **Chat with AI Models**: Interact with OpenAI and Cloudflare AI models directly from your terminal.
-- **Dynamic Tool Aggregator**: Utilize Cloudflare's AI Function Calling to provide various functionalities like GitHub user info retrieval, stock analysis, web scraping, and more.
-- **GitHub User Info**: Fetch public details of GitHub users.
-- **Stock Analysis**: Retrieve real-time stock data, company profiles, and analyst recommendations.
-- **Web Scraping**: Extract visible text and metadata from webpages.
-- **Product Hunt Leaderboard**: Get the latest trending products on Product Hunt.
-- **Web Search**: Perform Google search and retrieve top results.
+- **Linux Terminal Mastery**: Solve zsh issues, recommend commands, scripts, and shortcuts, and assist with zsh configuration and optimization.
+- **Programming Support**: Debug code, solve programming challenges, and provide optimized code snippets and best practices.
+- **Cybersecurity Guidance**: Advise on ethical hacking, penetration testing, and system hardening.
+- **Tech Knowledge**: Explain concepts, tools, and techniques across AI, science, and technology.
+- **Integrated Tools**: Utilize a variety of tools for web searches, stock analysis, GitHub user info, product trends, and more.
 
 ## Installation
 
+### Prerequisites
+
+- Python 3.8 or higher
+- Zsh shell
+
+### Steps
+
 1. **Clone the Repository**:
-    ```bash
-    git clone https://github.com/your-username/zsh-python-plugin.git
-    cd zsh-python-plugin
-    ```
+   ```bash
+   git clone https://github.com/your-repo/shellsense.git
+   cd shellsense
+   ```
 
-2. **Run the Setup Script**:
-    ```bash
-    ./setup.sh
-    ```
+2. **Install Dependencies**:
+   ```bash
+   ./setup.sh
+   ```
 
-3. **Add Your `.env` Configurations**:
-    ```bash
-    cp config/example.env .env
-    ```
-
-    ### `.env` Variables:
-
-    | Variable                | Description                                  |
-    |-------------------------|----------------------------------------------|
-    | `OPENAI_API_KEY`        | OpenAI API key                               |
-    | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID                         |
-    | `CLOUDFLARE_AUTH_TOKEN` | Cloudflare authentication token               |
-    | `ACCOUNT_ID`            | Cloudflare's unique account ID                |
-    | `API_TOKEN`             | Authentication token for tools                |
-    | `MODEL_NAME`            | Name of the AI model used in tools            |
-
-4. **Restart Your Terminal or Use**:
-    ```bash
-    source ~/.zshrc
-    ```
+3. **Add ShellSense to Your Zsh Configuration**:
+   The setup script will automatically add the necessary configurations to your `.zshrc` file. Restart your terminal or run `source ~/.zshrc` to activate ShellSense.
 
 ## Usage
 
-- **Chat with OpenAI Models**:
-    ```bash
-    shellsense -c "Your query here"
-    ```
+### Commands
 
-- **Chat with Cloudflare's Models**:
-    ```bash
-    shellsense -cf "Your query here"
-    ```
+- **Chat with OpenAI GPT Model**:
+  ```bash
+  shellsense -c "Your query here"
+  ```
+
+- **Chat with Cloudflare AI Model**:
+  ```bash
+  shellsense -cf "Your query here"
+  ```
 
 - **Process a Query with CopiloHero Tools**:
-    ```bash
-    shellsense -q "Your query here"
-    ```
+  ```bash
+  shellsense -q "Your query here"
+  ```
 
-## Example Queries
+### Aliases
 
-- **Retrieve GitHub User Info**:
-    ```bash
-    shellsense -q "Get information about the GitHub user 'octocat'."
-    ```
+- **shellsense**: Main command to interact with the plugin.
+- **sschat**: Alias for `shellsense -c`.
+- **sscfchat**: Alias for `shellsense -cf`.
+- **ssai**: Alias for `shellsense -q`.
 
-- **Get Current Stock Price**:
-    ```bash
-    shellsense -q "Get the current stock price of 'AAPL'."
-    ```
+#### Example:
+- Using `ssai` instead of `shellsense -q`
+  ```sh
+  ssai "Who is venopyx on github"
+  ```
 
-- **Capture a Screenshot of a Webpage**:
-    ```bash
-    shellsense -q "Capture a screenshot of 'https://example.com'."
-    ```
+## Tools
 
-- **Fetch Trending Products from Product Hunt**:
-    ```bash
-    shellsense -q "Fetch trending products from Product Hunt."
-    ```
+ShellSense comes with a variety of integrated tools to enhance your terminal experience:
 
-- **Perform a Google Search**:
-    ```bash
-    shellsense -q "Perform a Google search for 'latest tech news'."
-    ```
+- **StockTool**: Fetch current stock prices, company profiles, and analyst recommendations.
+- **WebSearchTool**: Perform Google searches and retrieve top results.
+- **CrawlerTool**: Scrape visible text and metadata from webpages.
+- **ProductHuntTool**: Retrieve top trending products from Product Hunt.
+- **ScreenshotTool**: Capture screenshots of webpages.
+- **TranslatorTool**: Translate text between different languages.
+- **WikipediaSearchTool**: Perform Wikipedia searches and return relevant pages.
+- **CoderTool**: Generate concise, well-structured code snippets.
+- **GitHubTool**: Fetch publicly available information about GitHub users.
+- **CommandExecutionTool**: Execute shell commands and handle file/folder operations.
+
+## Configuration
+
+Configure your environment variables in the `config/example.env` file:
+
+```env
+CLOUDFLARE_ACCOUNT_ID=your-cloudflare-account-id
+CLOUDFLARE_AUTH_TOKEN=your-cloudflare-auth-token
+OPENAI_API_KEY=your-openai-api-key [OPTIONAL]
+FUNCTION_CALL_MODEL=@hf/nousresearch/hermes-2-pro-mistral-7b [OPTIONAL]
+FRIENDLY_RESPONSE_MODEL=@hf/mistral/mistral-7b-instruct-v0.2 [OPTIONAL]
+```
 
 ## Contributing
 
-Feel free to fork this project, open issues, and submit pull requests. Contributions are welcome!
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Make your changes and commit them with descriptive messages.
+4. Open a pull request with a clear description of your changes.
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## Future Features
+## Contact
 
-ShellSense is continuously evolving with many more features in development. Stay tuned for updates!
+For any questions or support, please open an issue on the GitHub repository or contact the maintainers directly.
