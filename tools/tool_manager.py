@@ -64,7 +64,7 @@ class ToolManager:
         Process the user query by calling Cloudflare's API and handle both tool calls and direct responses.
         """
 
-        loader.start("Processing your query... ", "CYAN")
+        loader.start("Processing... ", "CYAN")
 
         # Generate available tool names dynamically
         tool_names = list(self.tool_mapping.keys())
@@ -92,7 +92,7 @@ class ToolManager:
             # Call Cloudflare API to determine response
             response = requests.post(self.url, json=payload, headers=headers)
             response.raise_for_status()
-            print(f"Cloudflare API Response: {response.text}")  # Debugging Cloudflare response
+            # print(f"Cloudflare API Response: {response.text}")  # Debugging Cloudflare response
 
             data = response.json()
             result = data.get("result", {})
@@ -135,7 +135,7 @@ class ToolManager:
             # Check for direct AI response
             ai_response = result.get("response", None)
             if ai_response:
-                print(f"Direct AI Response: {ai_response}")  # Debugging direct AI response
+                # print(f"Direct AI Response: {ai_response}")  # Debugging direct AI response
                 loader.stop("Completed! ✅", "GREEN")
                 loader.clear()
                 return ai_response

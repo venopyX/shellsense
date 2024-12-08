@@ -9,10 +9,16 @@ from tools.base_tool import BaseTool
 class ProductHuntTool(BaseTool):
     """
     Retrieves the top trending products from Product Hunt's daily leaderboard.
-    This tool allows users to discover popular products by fetching the latest trending items on Product Hunt.
-    You can specify a date or use the current day's leaderboard to get the top 5 products, including their title,
-    vote count, description, link, and image. It is perfect for users looking to stay updated on the latest trends
-    in tech, apps, and other products. e.g. "Today's producthunt products", "Producthunt leaderboard", "Best products of the day" etc
+    
+    This tool allows users to discover the latest trending products on Product Hunt by fetching 
+    the top 5 products from the daily leaderboard. Users can specify a date in YYYY/MM/DD format 
+    or use the current day's leaderboard. The retrieved data includes the product title, vote count, 
+    description, link, and image. This tool is ideal for staying updated on the newest tech, apps, and 
+    products. For example, users can query: "Product Hunt daily leaderboard", "Top products today", 
+    "Trending products of the day", etc. 
+
+    NOTE: Ensure the date is in YYYY/MM/DD format. DO NOT use words like "today", "yesterday", or "last Sunday". 
+    Always convert such references into a valid date format.
     """
 
     def invoke(self, input: dict) -> dict:
@@ -57,7 +63,7 @@ class ProductHuntTool(BaseTool):
                     'image': image
                 })
 
-            print(f"Products: {trending_products}")
+            # print(f"Products: {trending_products}")
             if trending_products == []:
                 return "No product posts for this date."
             return {"products": trending_products}
@@ -75,7 +81,7 @@ class ProductHuntTool(BaseTool):
                 "date": {
                     "type": "string",
                     "format": "date",
-                    "description": "The date for which to retrieve the trending products in YYYY/MM/DD format."
+                    "description": "The date for which to retrieve the trending products in YYYY/MM/DD format. DONOT USE WORDS LIKE: today, yesterday, last sunday, etc Convert them to the valid format!"
                 }
             },
             "required": []
