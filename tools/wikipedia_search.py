@@ -9,7 +9,10 @@ logger = logging.getLogger(__name__)
 
 class WikipediaSearchTool(BaseTool):
     """
-    Performs a search on Wikipedia and retrieves the content and URL of the top result.
+    Performs a Wikipedia search and returns the top result or related suggestions. 
+    This tool allows users to quickly retrieve relevant Wikipedia pages based on a search query, 
+    providing the page title, URL, and a summary. It also handles cases where no exact match is found 
+    or when the query leads to multiple possible results.
     """
 
     def invoke(self, input: dict) -> dict:

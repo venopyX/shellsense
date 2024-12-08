@@ -8,7 +8,14 @@ logger = logging.getLogger(__name__)
 
 class WebSearchTool(BaseTool):
     """
-    Performs a Google search and retrieves top results based on the query.
+    Performs a Google search and retrieves the top results based on the given query.
+    This tool allows users to quickly search the web for relevant realtime information, fetching titles, 
+    URLs, and descriptions of the most relevant pages. It can be used for answering queries such as 
+    "What are the latest news on [topic]?"
+
+    Users can specify the number of results to retrieve, with the default being 5. The tool provides 
+    a summary of the most relevant search results to help users stay updated on current topics or 
+    find specific web content.
     """
 
     def invoke(self, input: dict) -> dict:

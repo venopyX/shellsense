@@ -1,7 +1,5 @@
-# tools/crawler.py
-
 from bs4 import BeautifulSoup
-import requests
+from requests_html import HTMLSession
 from tools.base_tool import BaseTool
 
 class CrawlerTool(BaseTool):
@@ -26,13 +24,14 @@ class CrawlerTool(BaseTool):
                 url = 'https://' + url
 
         try:
-            # Send a GET request to the URL
-            response = requests.get(url)
-            if response.status_code != 200:
-                return {"error": f"Failed to retrieve content. Status code: {response.status_code}"}
+            # Create an HTML session and render the page
+            session = HTMLSession()
+            response = session.get(url)
+            print(f"I'm Reading {url} contents... Please hold on just a minute(60 seconds)")
+            response.html.render(sleep=60)  # Wait for 60 seconds for JS content to load
 
-            # Parse the HTML content
-            soup = BeautifulSoup(response.text, 'html.parser')
+            # Parse the rendered HTML content
+            soup = BeautifulSoup(response.html.html, 'html.parser')
             elements_with_text = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'b', 'strong', 'em']
             visible_texts = []
 
@@ -43,6 +42,7 @@ class CrawlerTool(BaseTool):
                     visible_texts.append(f"{element.name}: {text_content}")
 
             result_text = ' '.join(visible_texts)
+            # print(result_text)
             return {"text": result_text[:10000]}  # Limiting text to 10,000 characters
 
         except Exception as e:

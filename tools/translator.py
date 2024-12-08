@@ -5,7 +5,10 @@ from tools.base_tool import BaseTool
 
 class TranslatorTool(BaseTool):
     """
-    Translates a given text from a specified source language to a target language.
+    Translates a given text from a source language to a target language. 
+    This tool allows users to easily convert text between different languages, 
+    making it ideal for communication, localization, and content understanding across language barriers.
+    Simply provide the source language, target language, and the text to be translated.
     """
 
     def invoke(self, input: dict) -> dict:

@@ -1,5 +1,5 @@
 from config.settings import Config
-from prompts import friendly_ai
+from prompts import friendly_ai, system_prompt
 from providers.cloudflare_provider import CloudflareProvider
 
 class FriendlyAiResponse:
@@ -21,6 +21,7 @@ class FriendlyAiResponse:
         str: A refined, user-friendly response.
         """
         messages = [
+            {"role": "system", "content": system_prompt()},
             {"role": "system", "content": friendly_ai()},
             {"role": "user", "content": f"User Query: {user_query}"},
             {"role": "assistant", "content": f"Tool Responses: {tool_output}"},

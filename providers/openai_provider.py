@@ -1,5 +1,6 @@
 import openai
 from config.settings import Config
+from prompts import system_prompt
 
 
 class OpenAIProvider:
@@ -24,7 +25,10 @@ class OpenAIProvider:
         try:
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}],
+                messages=[
+                {"role": "system", "content": system_prompt()},
+                {"role": "user", "content": prompt}
+                ],
             )
             return response.choices[0].message["content"]
         except openai.error.OpenAIError as e:

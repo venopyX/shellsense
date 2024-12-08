@@ -9,27 +9,38 @@ class StockTool(BaseTool):
     """
 
     def invoke(self, input: dict) -> dict:
-        action = input.get("action")
-        symbol = input.get("symbol")
+        action: str = input.get("action")
+        symbol: str = input.get("symbol")
+        
         if not symbol or not action:
             return {"error": "Both 'symbol' and 'action' parameters are required."}
 
         try:
             stock = yf.Ticker(symbol)
             if action == "getCurrentPrice":
-                return {"price": stock.info.get("regularMarketPrice")}
+                price = stock.info.get("regularMarketPrice")
+                if price is None:
+                    return {"error": "Current price data is not available."}
+                return {"price": price}
+            
             elif action == "getCompanyProfile":
-                return {
+                profile = {
                     "name": stock.info.get("longName"),
                     "sector": stock.info.get("sector"),
                     "industry": stock.info.get("industry"),
                     "description": stock.info.get("longBusinessSummary"),
                 }
+                # Filter out None values from the profile
+                profile = {k: v for k, v in profile.items() if v is not None}
+                return profile if profile else {"error": "Company profile data is not available."}
+            
             elif action == "getAnalystRecommendations":
                 recommendations = stock.recommendations.to_dict("records") if stock.recommendations is not None else []
                 return {"recommendations": recommendations}
+            
             else:
                 return {"error": "Invalid action specified."}
+
         except Exception as e:
             return {"error": f"Exception during stock data retrieval: {str(e)}"}
 
@@ -46,7 +57,8 @@ class StockTool(BaseTool):
                 },
                 "action": {
                     "type": "string",
-                    "description": "Action to perform: 'getCurrentPrice', 'getCompanyProfile', or 'getAnalystRecommendations'.",
+                    "description": ("Action to perform: 'getCurrentPrice', "
+                                    "'getCompanyProfile', or 'getAnalystRecommendations'."),
                     "enum": ["getCurrentPrice", "getCompanyProfile", "getAnalystRecommendations"]
                 }
             },

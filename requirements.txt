@@ -9,3 +9,5 @@ beautifulsoup4
 deep_translator
 yfinance
 wikipedia
+requests-html
+lxml[html_clean]

@@ -1,6 +1,6 @@
 import requests
 from config.settings import Config
-from prompts import tool_caller_ai
+from prompts import tool_caller_ai, system_prompt
 from providers.friendly_ai_response import FriendlyAiResponse
 from tools import (
     StockTool,
@@ -14,7 +14,9 @@ from tools import (
     GitHubTool,
     CommandExecutionTool,
 )
+from utils import FuturisticLoading
 
+loader = FuturisticLoading()
 
 class ToolManager:
     def __init__(self):
@@ -62,6 +64,8 @@ class ToolManager:
         Process the user query by calling Cloudflare's API and handle both tool calls and direct responses.
         """
 
+        loader.start("Processing your query... ", "CYAN")
+
         # Generate available tool names dynamically
         tool_names = list(self.tool_mapping.keys())
         tool_names_str = f"Available tools: {tool_names}"
@@ -69,6 +73,7 @@ class ToolManager:
 
         payload = {
             "messages": [
+            {"role": "system", "content": system_prompt()},
             {"role": "system", "content": tool_caller_ai(tool_names_str)},
             {"role": "user", "content": user_query}
             ],
@@ -95,6 +100,7 @@ class ToolManager:
             # Handle tool calls if present
             tool_calls = result.get("tool_calls", [])
             if tool_calls:
+                loader.text("Using tools...", "CYAN")
                 # print(f"Tool Calls: {tool_calls}")  # Debugging tool calls
                 aggregated_output = []
                 for tool_call in tool_calls:
@@ -117,23 +123,29 @@ class ToolManager:
                 # print(f"Combined Tool Outputs: {combined_tool_output}")  # Debugging combined tool outputs
 
                 # Use AI to refine the aggregated tool outputs for user-friendly response
+                loader.text("Responding...", "CYAN")
                 friendly_response = self.friendly_ai_response.get_friendly_response(
                     user_query=user_query,
                     tool_output=combined_tool_output
                 )
                 # print(f"Friendly AI Response: {friendly_response}")  # Debugging AI refinement
+                loader.stop("Completed! ✅", "GREEN")
                 return friendly_response
 
             # Check for direct AI response
             ai_response = result.get("response", None)
             if ai_response:
                 print(f"Direct AI Response: {ai_response}")  # Debugging direct AI response
+                loader.stop("Completed! ✅", "GREEN")
+                loader.clear()
                 return ai_response
 
+            loader.stop("No Response! ⚠️", "YELLOW")
             print("No response from tools or AI.")
             return "I'm sorry, I couldn't process your query."
 
         except Exception as e:
+            loader.stop("Failed! ❌", "RED")
             print(f"Error processing query: {str(e)}")
             return f"Error processing your query: {str(e)}"
 

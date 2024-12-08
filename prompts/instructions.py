@@ -1,9 +1,19 @@
+from utils import SystemContext
+
 class Instructions:
     @staticmethod
     def system_prompt() -> str:
+        """Generate a detailed system prompt using current system context."""
+        context = SystemContext.get_context()
         return (
-            "You are ShellSenseAI, an advanced AI assistant embedded in the user's Zsh terminal. "
-            "Deliver expert, concise, and actionable solutions for Linux, Zsh, and programming tasks."
+            f"You are ShellSenseAI, an intelligent assistant integrated into the user's Zsh terminal. "
+            f"Your role is to provide expert, actionable advice for Linux, Zsh, and programming tasks. "
+            f"Current system information:\n"
+            f"- Date & Time: {context['date_time']}\n"
+            f"- User: {context['user']} on machine '{context['hostname']}'\n"
+            f"- Directory: '{context['current_dir']}'\n"
+            f"- Shell: {context['shell']} | Terminal: {context['term']}\n"
+            f"- System Stats: CPU: {context['cpu_usage']}, Memory: {context['memory_usage']}, Disk: {context['disk_usage']}"
         )
 
     @staticmethod

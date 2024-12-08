@@ -2,6 +2,9 @@ import argparse
 from providers.cloudflare_provider import CloudflareProvider
 from providers.openai_provider import OpenAIProvider
 from tools.tool_manager import ToolManager
+from utils import FuturisticLoading
+
+loader = FuturisticLoading()
 
 def main():
     parser = argparse.ArgumentParser(description="ShellSense Plugin")
@@ -20,8 +23,9 @@ def main():
         print(response)
     elif args.query:
         tool_manager = ToolManager()
-        print("Processing your query; this may take a moment...")
+        loader.start("Processing... ", "CYAN")
         response = tool_manager.process_query(args.query)
+        loader.stop("Completed! ✅", "GREEN")
         print(response)
     else:
         print("Error: No valid argument provided. Use -h or --help for usage.")
