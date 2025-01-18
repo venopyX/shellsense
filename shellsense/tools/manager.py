@@ -1,20 +1,18 @@
 import requests
-from config.settings import Config
-from prompts import tool_caller_ai, system_prompt
-from providers.friendly_ai_response import FriendlyAiResponse
-from tools import (
-    StockTool,
-    WebSearchTool,
-    CrawlerTool,
-    ProductHuntTool,
-    ScreenshotTool,
-    TranslatorTool,
-    WikipediaSearchTool,
-    CoderTool,
-    GitHubTool,
-    CommandExecutionTool,
-)
-from utils import FuturisticLoading
+from shellsense.config.settings import Config
+from shellsense.ai.prompts.instructions import tool_caller_ai, system_prompt
+from shellsense.ai.providers.friendly_ai_response import FriendlyAiResponse
+from shellsense.tools.data.stock import StockTool
+from shellsense.tools.web.websearch import WebSearchTool
+from shellsense.tools.web.crawler import CrawlerTool
+from shellsense.tools.web.producthunt import ProductHuntTool
+from shellsense.tools.media.screenshoter import ScreenshotTool
+from shellsense.tools.language.translator import TranslatorTool
+from shellsense.tools.data.wikipedia_search import WikipediaSearchTool
+from shellsense.tools.coder import CoderTool
+from shellsense.tools.data.github import GitHubTool
+from shellsense.tools.shell.command_execution import CommandExecutionTool
+from shellsense.utils.futuristic_loading import FuturisticLoading
 
 loader = FuturisticLoading()
 
@@ -129,7 +127,7 @@ class ToolManager:
                     tool_output=combined_tool_output
                 )
                 # print(f"Friendly AI Response: {friendly_response}")  # Debugging AI refinement
-                loader.stop("Completed! ✅", "GREEN")
+                loader.stop("Completed! ", "GREEN")
                 loader.clear()
                 return friendly_response
 
@@ -137,22 +135,22 @@ class ToolManager:
             ai_response = result.get("response", None)
             if ai_response:
                 # print(f"Direct AI Response: {ai_response}")  # Debugging direct AI response
-                loader.stop("Completed! ✅", "GREEN")
+                loader.stop("Completed! ", "GREEN")
                 loader.clear()
                 return ai_response
 
-            loader.text("No Response! ⚠️", "YELLOW")
+            loader.text("No Response! ", "YELLOW")
             friendly_response = self.friendly_ai_response.get_friendly_response(
             user_query=user_query,
             tool_output=response.text
             )
             # print(f"Friendly AI Response: {friendly_response}")  # Debugging AI refinement
-            loader.stop("Completed! ✅", "GREEN")
+            loader.stop("Completed! ", "GREEN")
             loader.clear()
             return friendly_response
 
         except Exception as e:
-            loader.stop("Failed! ❌", "RED")
+            loader.stop("Failed! ", "RED")
             print(f"Error processing query: {str(e)}")
             return f"Error processing your query: {str(e)}"
 
