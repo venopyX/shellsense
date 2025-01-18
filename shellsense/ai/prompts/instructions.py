@@ -1,24 +1,45 @@
-from utils import SystemContext
+import logging
+from shellsense.utils.system_context import SystemContext
+
+logger = logging.getLogger(__name__)
 
 class Instructions:
     @staticmethod
     def system_prompt() -> str:
-        """Generate a detailed system prompt using current system context."""
-        context = SystemContext.get_context()
-        return (
-            f"You are ShellSenseAI, an intelligent AI integrated into the user's Zsh terminal. "
-            f"Your role is to provide expert, actionable solutions for Linux, Zsh, and programming tasks. "
-            f"User's Current System Information:\n"
-            f"- Date & Time: {context['date_time']}\n"
-            f"- User: {context['user']} on machine '{context['hostname']}'\n"
-            f"- Directory: '{context['current_dir']}'\n"
-            f"- Shell: {context['shell']} | Terminal: {context['term']}\n"
-            f"- System Stats: CPU: {context['cpu_usage']}, Memory: {context['memory_usage']}, Disk: {context['disk_usage']}\n"
-            "Use these User's system context datas if you need! It's generated now using os, psutils, and datetime libraries!"
-        )
+        """
+        Generate a detailed system prompt using current system context.
+
+        Returns:
+            str: A system prompt containing current system information
+        """
+        try:
+            logger.debug("Generating system prompt")
+            context = SystemContext.get_context()
+            prompt = (
+                f"You are ShellSenseAI, an intelligent AI integrated into the user's Zsh terminal. "
+                f"Your role is to provide expert, actionable solutions for Linux, Zsh, and programming tasks. "
+                f"User's Current System Information:\n"
+                f"- Date & Time: {context['date_time']}\n"
+                f"- User: {context['user']} on machine '{context['hostname']}'\n"
+                f"- Directory: '{context['current_dir']}'\n"
+                f"- Shell: {context['shell']} | Terminal: {context['term']}\n"
+                f"- System Stats: CPU: {context['cpu_usage']}, Memory: {context['memory_usage']}, Disk: {context['disk_usage']}\n"
+                "Use these User's system context datas if you need! It's generated now using os, psutils, and datetime libraries!"
+            )
+            logger.debug("Successfully generated system prompt")
+            return prompt
+        except Exception as e:
+            logger.error(f"Failed to generate system prompt: {str(e)}")
+            return "You are ShellSenseAI, an intelligent AI integrated into the user's Zsh terminal."
 
     @staticmethod
-    def shellsense_ai():
+    def shellsense_ai() -> str:
+        """
+        Get the ShellSenseAI core instructions.
+
+        Returns:
+            str: The core instructions for ShellSenseAI
+        """
         return (
             """You are ShellSenseAI, an advanced zsh terminal assistant integrated via the ShellSense plugin by @venopyX. 
             Your expertise includes:
@@ -42,6 +63,12 @@ class Instructions:
 
     @staticmethod
     def friendly_ai() -> str:
+        """
+        Get the friendly AI response instructions.
+
+        Returns:
+            str: Instructions for generating friendly AI responses
+        """
         return (
             "You are a friendly and knowledgeable AI. Respond to user queries naturally and confidently using the data provided. "
             "Avoid listing raw details unless explicitly requested. Instead, summarize and format the response as clear, concise, "
@@ -53,6 +80,12 @@ class Instructions:
 
     @staticmethod
     def coder_ai() -> str:
+        """
+        Get the coder AI response instructions.
+
+        Returns:
+            str: Instructions for generating coder AI responses
+        """
         return (
             "You are a supernatural programmer with unparalleled expertise in all programming languages. "
             "Your role is to generate fully functional, concise, and optimized code based on the user's provided language and task. "
@@ -67,6 +100,15 @@ class Instructions:
 
     @staticmethod
     def tool_caller_ai(tool_names_str: str) -> str:
+        """
+        Get the tool caller AI response instructions.
+
+        Args:
+            tool_names_str (str): A string containing the names of available tools
+
+        Returns:
+            str: Instructions for generating tool caller AI responses
+        """
         return (
             f"You are ShellSenseAI, an intelligent assistant capable of using the following tools: {tool_names_str}. "
             "Call only the available tools as needed, ensuring accurate and efficient use of their functionality. "

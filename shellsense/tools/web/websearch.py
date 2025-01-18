@@ -1,72 +1,182 @@
-# tools/websearch.py
-
 import logging
-from googlesearch import search, SearchResult
-from tools.base_tool import BaseTool
+from typing import Dict, Any, List, Optional
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import quote_plus
+from shellsense.tools.base import BaseTool
 
 logger = logging.getLogger(__name__)
 
 class WebSearchTool(BaseTool):
     """
-    Performs a Google search and retrieves the top results based on the given query.
-    This tool allows users to quickly search the web for relevant realtime information, fetching titles, 
-    URLs, and descriptions of the most relevant pages. It can be used for answering queries such as 
-    "What are the latest news on [topic]?"
-
-    Users can specify the number of results to retrieve, with the default being 5. The tool provides 
-    a summary of the most relevant search results to help users stay updated on current topics or 
-    find specific web content.
+    A tool for searching the web using Bing and DuckDuckGo.
+    Supports configurable number of results and choice of search engine.
     """
 
-    def invoke(self, input: dict) -> dict:
-        query = input.get("query")
-        num_results = input.get("num_results", 5)
+    def __init__(self):
+        self.headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
 
-        if not query:
-            return {"error": "Query parameter is required."}
+    def invoke(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Perform web search using specified engine.
 
+        Args:
+            input_data (Dict[str, Any]): Input containing:
+                - query (str): Search query
+                - engine (str, optional): Search engine to use ("bing" or "ddg", default: "bing")
+                - num_results (int, optional): Number of results to return (default: 5)
+
+        Returns:
+            Dict[str, Any]: Search results or error message
+
+        Example:
+            >>> tool = WebSearchTool()
+            >>> results = tool.invoke({
+            ...     "query": "artificial intelligence",
+            ...     "engine": "bing",
+            ...     "num_results": 3
+            ... })
+        """
         try:
-            # Perform Google search using advanced mode to get title, url, and description
-            search_results = search(query, num_results=num_results, sleep_interval=2, advanced=True)
-
-            # Format the search results
-            formatted_results = []
-            for result in search_results:
-                # Check if result is a SearchResult object
-                if isinstance(result, SearchResult):
-                    formatted_results.append({
-                        "title": result.title if result.title else "No Title",
-                        "url": result.url,
-                        "description": result.description if result.description else "No Description"
-                    })
-                else:
-                    # Handle the case where only a URL is returned
-                    formatted_results.append({
-                        "title": "No Title",
-                        "url": result,
-                        "description": "No Description"
-                    })
-
-            return {"results": formatted_results}
-
+            self.validate_input(input_data)
+            
+            query = input_data["query"]
+            engine = input_data.get("engine", "bing").lower()
+            num_results = min(input_data.get("num_results", 5), 10)  # Cap at 10 results
+            
+            logger.info(f"Searching {engine.upper()} for: {query}")
+            
+            if engine == "bing":
+                results = self._bing_search(query, num_results)
+            elif engine == "ddg":
+                results = self._ddg_search(query, num_results)
+            else:
+                raise ValueError(f"Unsupported search engine: {engine}")
+                
+            if not results:
+                return {"error": "No results found"}
+                
+            return {"results": results}
+            
+        except ValueError as e:
+            logger.error(f"Invalid input: {str(e)}")
+            return {"error": f"Invalid input: {str(e)}"}
+        except requests.RequestException as e:
+            logger.error(f"Request failed: {str(e)}")
+            return {"error": f"Search request failed: {str(e)}"}
         except Exception as e:
-            logger.error(f"Error performing Google search: {str(e)}")
-            return {"error": f"Exception during search: {str(e)}"}
+            logger.error(f"Unexpected error: {str(e)}")
+            return {"error": f"Search failed: {str(e)}"}
 
-    def get_schema(self) -> dict:
+    def _ddg_search(self, query: str, num_results: int) -> List[Dict[str, str]]:
+        """
+        Perform DuckDuckGo search.
+        
+        Args:
+            query: Search query
+            num_results: Number of results to return
+            
+        Returns:
+            List of search results with title, url, and snippet
+        """
+        results = []
+        try:
+            url = f"https://html.duckduckgo.com/html/?q={quote_plus(query)}"
+            response = requests.get(url, headers=self.headers, timeout=10)
+            response.raise_for_status()
+            
+            soup = BeautifulSoup(response.text, 'html.parser')
+            search_results = soup.find_all('div', class_='result')
+            
+            for result in search_results[:num_results]:
+                title_elem = result.find('a', class_='result__a')
+                snippet_elem = result.find('a', class_='result__snippet')
+                
+                if title_elem and snippet_elem:
+                    results.append({
+                        'title': title_elem.text.strip(),
+                        'url': title_elem['href'],
+                        'snippet': snippet_elem.text.strip()
+                    })
+                    
+            return results
+            
+        except Exception as e:
+            logger.error(f"DuckDuckGo search failed: {str(e)}")
+            return []
+
+    def _bing_search(self, query: str, num_results: int) -> List[Dict[str, str]]:
+        """
+        Perform Bing search.
+        
+        Args:
+            query: Search query
+            num_results: Number of results to return
+            
+        Returns:
+            List of search results with title, url, and snippet
+        """
+        results = []
+        try:
+            url = f"https://www.bing.com/search?q={quote_plus(query)}&count={num_results}"
+            response = requests.get(url, headers=self.headers, timeout=10)
+            response.raise_for_status()
+            
+            soup = BeautifulSoup(response.text, 'html.parser')
+            search_results = soup.find_all('li', class_='b_algo')
+            
+            for result in search_results[:num_results]:
+                title_elem = result.find('h2')
+                link_elem = result.find('a')
+                snippet_elem = result.find('div', class_='b_caption')
+                
+                if title_elem and link_elem and snippet_elem:
+                    results.append({
+                        'title': title_elem.text.strip(),
+                        'url': link_elem['href'],
+                        'snippet': snippet_elem.text.strip()
+                    })
+                    
+            return results
+            
+        except Exception as e:
+            logger.error(f"Bing search failed: {str(e)}")
+            return []
+
+    def get_schema(self) -> Dict[str, Any]:
         """
         Returns the JSON schema for the web search tool's input parameters.
+
+        Returns:
+            Dict[str, Any]: JSON schema for validation
+
+        Example schema:
+            {
+                "query": "artificial intelligence",
+                "engine": "bing",
+                "num_results": 5
+            }
         """
         return {
             "type": "object",
             "properties": {
                 "query": {
                     "type": "string",
-                    "description": "The search query to perform for up-to-date infos and future updates."
+                    "description": "Search query"
+                },
+                "engine": {
+                    "type": "string",
+                    "description": "Search engine to use",
+                    "enum": ["bing", "ddg"],
+                    "default": "bing"
                 },
                 "num_results": {
                     "type": "integer",
-                    "description": "The number of search results to retrieve. Default: 5 and use more than 5 if you need more detailed info from many sources.",
+                    "description": "Number of results to return (max: 10)",
+                    "minimum": 1,
+                    "maximum": 10,
                     "default": 5
                 }
             },
