@@ -1,10 +1,11 @@
-import sys
-import time
-import threading
 import logging
+import sys
+import threading
+import time
 from typing import Optional
 
 logger = logging.getLogger(__name__)
+
 
 class FuturisticLoading:
     """
@@ -15,9 +16,7 @@ class FuturisticLoading:
         """Initialize the loading animation."""
         self.loading = False
         self.thread: Optional[threading.Thread] = None
-        self.frames = [
-            "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"
-        ]
+        self.frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
         self.colors = {
             "RED": "\033[91m",
             "GREEN": "\033[92m",
@@ -26,7 +25,7 @@ class FuturisticLoading:
             "MAGENTA": "\033[95m",
             "CYAN": "\033[96m",
             "WHITE": "\033[97m",
-            "RESET": "\033[0m"
+            "RESET": "\033[0m",
         }
         self.current_text = ""
 
@@ -42,7 +41,9 @@ class FuturisticLoading:
             i = 0
             while self.loading:
                 frame = self.frames[i % len(self.frames)]
-                sys.stdout.write(f"\r{self.colors[color]}{frame} {text}{self.colors['RESET']}")
+                sys.stdout.write(
+                    f"\r{self.colors[color]}{frame} {text}{self.colors['RESET']}"
+                )
                 sys.stdout.flush()
                 time.sleep(0.1)
                 i += 1
@@ -83,7 +84,9 @@ class FuturisticLoading:
                 if self.thread:
                     self.thread.join()
                 if text:
-                    sys.stdout.write(f"\r{self.colors[color]}{text}{self.colors['RESET']}\n")
+                    sys.stdout.write(
+                        f"\r{self.colors[color]}{text}{self.colors['RESET']}\n"
+                    )
                 else:
                     sys.stdout.write("\r\033[K")
                 sys.stdout.flush()
@@ -114,6 +117,7 @@ class FuturisticLoading:
             sys.stdout.flush()
         except Exception as e:
             logger.error(f"Failed to clear loading text: {str(e)}")
+
 
 # Usage example:
 if __name__ == "__main__":

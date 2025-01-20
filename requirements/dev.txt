@@ -1,6 +1,7 @@
 python-dotenv
 openai
 requests
+psutil
 bs4
 selenium
 pillow
@@ -8,7 +9,6 @@ googlesearch-python
 beautifulsoup4
 deep_translator
 googletrans
-psutil
 yfinance
 wikipedia
 requests-html

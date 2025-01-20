@@ -1,10 +1,12 @@
-import os
 import logging
-from datetime import datetime
-import psutil
+import os
 import socket
+from datetime import datetime
+
+import psutil
 
 logger = logging.getLogger(__name__)
+
 
 class SystemContext:
     """
@@ -41,7 +43,7 @@ class SystemContext:
             current_dir = os.getcwd()
             shell = os.getenv("SHELL", "Unknown Shell")
             term = os.getenv("TERM", "Unknown Terminal")
-            
+
             try:
                 ip = socket.gethostbyname(socket.gethostname())
             except socket.error:
@@ -51,7 +53,7 @@ class SystemContext:
             try:
                 cpu = psutil.cpu_percent()
                 memory = psutil.virtual_memory().percent
-                disk = psutil.disk_usage('/').percent
+                disk = psutil.disk_usage("/").percent
             except psutil.Error as e:
                 logger.error(f"Failed to gather system metrics: {str(e)}")
                 cpu = memory = disk = "Unknown"
@@ -65,7 +67,9 @@ class SystemContext:
                 "term": term,
                 "ip": ip,
                 "cpu_usage": f"{cpu}%" if isinstance(cpu, (int, float)) else cpu,
-                "memory_usage": f"{memory}%" if isinstance(memory, (int, float)) else memory,
+                "memory_usage": (
+                    f"{memory}%" if isinstance(memory, (int, float)) else memory
+                ),
                 "disk_usage": f"{disk}%" if isinstance(disk, (int, float)) else disk,
             }
 
@@ -76,8 +80,9 @@ class SystemContext:
             logger.error(f"Failed to gather system context: {str(e)}")
             return {
                 "error": f"Failed to gather system context: {str(e)}",
-                "date_time": datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+                "date_time": datetime.now().strftime("%Y/%m/%d %H:%M:%S"),
             }
+
 
 # Usage Example:
 # context = SystemContext.get_context()

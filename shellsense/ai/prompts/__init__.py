@@ -1,7 +1,8 @@
-from .instructions import Instructions
+"""
+ShellSense AI prompts package.
+"""
 
-system_prompt = Instructions.system_prompt
-shellsense_ai = Instructions.shellsense_ai
-friendly_ai = Instructions.friendly_ai
-coder_ai = Instructions.coder_ai
-tool_caller_ai = Instructions.tool_caller_ai
+from .instructions import (coder_ai_prompt, friendly_ai, system_prompt,
+                           tool_caller_ai)
+
+__all__ = ["system_prompt", "coder_ai_prompt", "tool_caller_ai", "friendly_ai"]

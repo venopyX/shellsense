@@ -1,170 +1,154 @@
 import os
-import logging
 import subprocess
-from typing import List, Union, Dict, Any
 from getpass import getpass
-from shellsense.tools.base import BaseTool
 
-logger = logging.getLogger(__name__)
+from shellsense.tools.base_tool import BaseTool
+
 
 class CommandExecutionTool(BaseTool):
     """
-    A tool to execute shell commands, create files/folders, and handle operations in the user's home directory.
-    Use this tool, if user needs to know about their computer or wants you to interact with the computer!
+    Executes shell commands, creates files/folders, and performs operations in the user's home directory.
 
-    Input:
-    - commands (list or string): A list of valid shell commands to execute sequentially or a single string containing commands separated by '&&'.
-                                  Example: ["mkdir ~/path/foldername", "touch ~/path/filename"] or
-                                          "mkdir ~/path/foldername && touch ~/path/filename"
-    - confirm_harmful (bool): True if harmful commands flagged by the tool should be executed.
+    Args:
+        commands (list[str] | str): A list of shell commands or a single string of commands separated by '&&'.
+            Examples:
+                ["mkdir ~/test", "touch ~/test/file.txt"]
+                "mkdir ~/test && touch ~/test/file.txt"
+        confirm_harmful (bool): Whether flagged harmful commands should be executed.
 
-    IMPORTANT:
-    - This tool ONLY accepts a list of valid shell commands inside the `commands` parameter or a single string with commands separated by '&&'.
-    - The AI MUST NOT create new parameters (e.g., folder_name, file_name) or change the input format.
-    - The `commands` parameter should contain shell commands like `mkdir` or `touch`.
-    - Don't use 'cd' command since you can't cd into other folder, execute command with path directly instead!
+    Notes:
+        - Commands like `rm -rf /`, `shutdown`, and other explicitly excluded commands will be flagged as harmful.
+        - This tool cannot use 'cd' to change directories. All commands must be executed with full paths.
 
-    DANGER NOTICE:
-    - ARGUMENTS MUST BE VALID SHELL COMMANDS!
+    Security:
+        - The tool warns against executing harmful commands and allows users to skip them unless explicitly confirmed.
     """
 
-    # List of explicitly excluded commands for security
-    EXCLUDED_COMMANDS = ["rm -rf /", "shutdown", "reboot", "dd if=", "mkfs", "wget http://"]
+    EXCLUDED_COMMANDS = [
+        "rm -rf /",
+        "shutdown",
+        "reboot",
+        "dd if=",
+        "mkfs",
+        "wget http://",
+    ]
 
-    def invoke(self, input_data: dict) -> Dict[str, Any]:
+    def invoke(self, input_data: dict) -> dict:
         """
-        Execute commands or create files/folders as per user input.
+        Execute the provided commands sequentially.
 
         Args:
-            input_data (dict): Dictionary with the following keys:
-                - commands (list or string): List of commands to execute (strings), or a single string with commands.
-                - confirm_harmful (bool): True if commands are marked as harmful by AI.
+            input_data (dict): A dictionary with the following keys:
+                - commands (list[str] | str): Shell commands to execute.
+                - confirm_harmful (bool): Whether flagged harmful commands should be executed.
 
         Returns:
-            Dict[str, Any]: Status of the executed commands, including any errors or skipped commands.
-
-        Raises:
-            ValueError: If input commands are invalid or potentially harmful.
-            subprocess.SubprocessError: If command execution fails.
+            dict: A summary of executed and skipped commands with their statuses.
         """
-        try:
-            logger.info("Processing command execution request")
-            commands = input_data.get("commands", [])
-            confirm_harmful = input_data.get("confirm_harmful", False)
+        commands = input_data.get("commands", [])
+        confirm_harmful = input_data.get("confirm_harmful", False)
 
-            # Convert string commands to list
-            if isinstance(commands, str):
-                commands = self.split_commands(commands)
+        # Convert commands to list if provided as a single string
+        if isinstance(commands, str):
+            commands = self.split_commands(commands)
 
-            # Validate commands
-            if not commands:
-                logger.error("No commands provided")
-                return {"error": "No commands provided"}
+        if not commands:
+            return {"error": "No commands provided for execution."}
 
-            # Check for harmful commands
-            harmful_commands = self.check_harmful_commands(commands)
-            if harmful_commands and not confirm_harmful:
-                logger.warning(f"Potentially harmful commands detected: {harmful_commands}")
-                return {
-                    "error": "Potentially harmful commands detected",
-                    "harmful_commands": harmful_commands
-                }
+        harmful_commands = [cmd for cmd in commands if self.is_harmful_command(cmd)]
+        safe_commands = [cmd for cmd in commands if cmd not in harmful_commands]
 
-            # Execute commands
-            results = []
-            for cmd in commands:
-                try:
-                    logger.info(f"Executing command: {cmd}")
+        # Warn and skip harmful commands unless confirmed
+        if harmful_commands and not confirm_harmful:
+            return {
+                "error": "Harmful commands detected. Execution aborted.",
+                "harmful_commands": harmful_commands,
+            }
+
+        results = {}
+        root_password = None
+
+        for cmd in safe_commands:
+            try:
+                result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+
+                # Handle permission errors
+                if "Permission denied" in result.stderr or result.returncode == 1:
+                    if root_password is None:
+                        root_password = getpass(
+                            "Enter root password for privileged commands: "
+                        )
+                    sudo_cmd = f"echo {root_password} | sudo -S {cmd}"
                     result = subprocess.run(
-                        cmd,
-                        shell=True,
-                        capture_output=True,
-                        text=True,
-                        check=True
+                        sudo_cmd, shell=True, capture_output=True, text=True
                     )
-                    results.append({
-                        "command": cmd,
-                        "output": result.stdout,
-                        "status": "success"
-                    })
-                    logger.debug(f"Command executed successfully: {cmd}")
-                except subprocess.SubprocessError as e:
-                    logger.error(f"Command execution failed: {cmd}, Error: {str(e)}")
-                    results.append({
-                        "command": cmd,
-                        "error": str(e),
-                        "status": "failed"
-                    })
 
-            return {"results": results}
+                results[cmd] = {
+                    "status": "success" if result.returncode == 0 else "failed",
+                    "output": result.stdout.strip(),
+                    "error": result.stderr.strip(),
+                }
+            except Exception as e:
+                results[cmd] = {"status": "error", "error": str(e)}
 
-        except Exception as e:
-            logger.error(f"Unexpected error in command execution: {str(e)}")
-            return {"error": f"Command execution failed: {str(e)}"}
+        return {
+            "executed_commands": safe_commands,
+            "skipped_commands": harmful_commands,
+            "results": results,
+        }
 
-    def split_commands(self, commands_str: str) -> List[str]:
+    @staticmethod
+    def is_harmful_command(cmd: str) -> bool:
         """
-        Split a string of commands into a list.
+        Check if a command is flagged as harmful.
 
         Args:
-            commands_str (str): String containing commands separated by '&&'.
+            cmd (str): The command to evaluate.
 
         Returns:
-            List[str]: List of individual commands.
+            bool: True if the command is harmful, otherwise False.
         """
-        try:
-            return [cmd.strip() for cmd in commands_str.split("&&") if cmd.strip()]
-        except Exception as e:
-            logger.error(f"Failed to split commands: {str(e)}")
-            return []
+        return any(
+            excluded in cmd for excluded in CommandExecutionTool.EXCLUDED_COMMANDS
+        )
 
-    def check_harmful_commands(self, commands: List[str]) -> List[str]:
+    @staticmethod
+    def split_commands(commands: str) -> list:
         """
-        Check for potentially harmful commands.
+        Split a string of commands separated by '&&' into a list of individual commands.
 
         Args:
-            commands (List[str]): List of commands to check.
+            commands (str): Commands separated by '&&'.
 
         Returns:
-            List[str]: List of detected harmful commands.
+            list[str]: A list of individual commands.
         """
-        try:
-            harmful = []
-            for cmd in commands:
-                if any(excluded in cmd.lower() for excluded in self.EXCLUDED_COMMANDS):
-                    harmful.append(cmd)
-            return harmful
-        except Exception as e:
-            logger.error(f"Failed to check harmful commands: {str(e)}")
-            return commands  # Return all commands as harmful if check fails
+        return [cmd.strip() for cmd in commands.split("&&")]
 
     def get_schema(self) -> dict:
         """
-        Returns the JSON schema for the CommandExecutionTool's input parameters.
+        Provide the input schema for the tool.
 
         Returns:
-            dict: JSON schema for validation and documentation.
+            dict: JSON schema following Cloudflare API requirements.
         """
         return {
             "type": "object",
             "properties": {
                 "commands": {
-                    "oneOf": [
-                        {
-                            "type": "array",
-                            "items": {"type": "string"},
-                            "description": "List of shell commands to execute"
-                        },
-                        {
-                            "type": "string",
-                            "description": "Single command or commands separated by '&&'"
-                        }
-                    ]
+                    "type": "string",
+                    "description": (
+                        "A list of shell commands or a single string of commands separated by '&&'. "
+                        "Examples: ['mkdir ~/test', 'touch ~/test/file.txt'] or 'mkdir ~/test && touch ~/test/file.txt'."
+                    ),
+                    "minLength": 1,
+                    "maxLength": 131072,
                 },
                 "confirm_harmful": {
                     "type": "boolean",
-                    "description": "Whether to execute commands flagged as harmful"
-                }
+                    "description": "Whether flagged harmful commands should be executed.",
+                    "default": False,
+                },
             },
-            "required": ["commands"]
+            "required": ["commands"],
         }

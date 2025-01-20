@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "shellsense"
-description = "Intelligent shell plugin that helps users to do tasks within their terminal using AI"
+description = "Universal AI-powered terminal assistant for Linux"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {file = "LICENSE"}
 authors = [
-    {name = "venopyX", email = "your.email@example.com"}
+    {name = "venopyX", email = "gladsonchala@gmail.com"}
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -24,58 +24,20 @@ classifiers = [
     "Topic :: System :: Shells",
     "Topic :: Utilities",
 ]
-dynamic = ["version"]
-dependencies = [
-    "python-dotenv",
-    "openai",
-    "requests",
-    "bs4",
-    "selenium",
-    "pillow",
-    "googlesearch-python",
-    "beautifulsoup4",
-    "deep_translator",
-    "yfinance",
-    "wikipedia",
-    "requests-html",
-    "lxml",
-]
+dynamic = ["version", "dependencies", "optional-dependencies"]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=6.0",
-    "pytest-cov",
-    "black",
-    "isort",
-    "mypy",
-    "flake8",
-]
+[project.scripts]
+shellsense = "shellsense.__main__:main"
 
-[project.urls]
-Homepage = "https://github.com/venopyX/shellsense"
-Documentation = "https://github.com/venopyX/shellsense/docs"
-Repository = "https://github.com/venopyX/shellsense.git"
-Issues = "https://github.com/venopyX/shellsense/issues"
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements/base.txt"]}
+optional-dependencies = {dev = {file = ["requirements/dev.txt"]}}
 
 [tool.setuptools]
 packages = ["shellsense"]
 
-[tool.black]
-line-length = 100
-target-version = ["py38"]
-
-[tool.isort]
-profile = "black"
-line_length = 100
-multi_line_output = 3
-
-[tool.mypy]
-python_version = "3.8"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "-ra -q --cov=shellsense"
-testpaths = ["tests"]
+[project.urls]
+Homepage = "https://github.com/venopyX/shellsense"
+Repository = "https://github.com/venopyX/shellsense.git"
+Documentation = "https://github.com/venopyX/shellsense/wiki"
+Changelog = "https://github.com/venopyX/shellsense/releases"

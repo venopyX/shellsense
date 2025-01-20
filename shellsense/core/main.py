@@ -1,19 +1,20 @@
 import argparse
 import logging
 from typing import Optional
+
 from shellsense.ai.providers.cloudflare_provider import CloudflareProvider
 from shellsense.ai.providers.openai_provider import OpenAIProvider
-from shellsense.tools.manager import ToolManager
+from shellsense.tools.tool_manager import ToolManager
 from shellsense.utils.futuristic_loading import FuturisticLoading
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
 loader = FuturisticLoading()
+
 
 def process_chat(prompt: str, provider: str = "openai") -> Optional[str]:
     """
@@ -40,6 +41,7 @@ def process_chat(prompt: str, provider: str = "openai") -> Optional[str]:
         logger.error(f"Failed to process chat request: {str(e)}")
         return f"Error processing chat request: {str(e)}"
 
+
 def process_tool_query(query: str) -> Optional[str]:
     """
     Process a query using the ToolManager.
@@ -63,16 +65,21 @@ def process_tool_query(query: str) -> Optional[str]:
         loader.stop("Query failed! ", "RED")
         return f"Error processing query: {str(e)}"
 
+
 def main() -> None:
     """Main entry point for the ShellSense plugin."""
     try:
         parser = argparse.ArgumentParser(
             description="ShellSense - An intelligent shell assistant",
-            epilog="For more information, visit: https://github.com/venopyX/shellsense"
+            epilog="For more information, visit: https://github.com/venopyX/shellsense",
         )
         parser.add_argument("-c", "--chat", type=str, help="Chat with OpenAI GPT model")
-        parser.add_argument("-cf", "--cloudflare", type=str, help="Chat with Cloudflare AI model")
-        parser.add_argument("-q", "--query", type=str, help="Process a query with ShellSense tools")
+        parser.add_argument(
+            "-cf", "--cloudflare", type=str, help="Chat with Cloudflare AI model"
+        )
+        parser.add_argument(
+            "-q", "--query", type=str, help="Process a query with ShellSense tools"
+        )
         args = parser.parse_args()
 
         if args.chat:
@@ -93,6 +100,7 @@ def main() -> None:
         logger.error(f"Application error: {str(e)}")
         print(f"An error occurred: {str(e)}")
         print("For help, use -h or --help")
+
 
 if __name__ == "__main__":
     main()
