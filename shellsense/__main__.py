@@ -11,12 +11,15 @@ from typing import Dict, Optional
 
 from shellsense.config import create_default_config, load_config
 from shellsense.tools.tool_manager import ToolManager
+from shellsense.utils.logging_manager import get_logger, log_function_call
 
-logger = logging.getLogger(__name__)
+# Initialize logger for this module
+logger = get_logger(__name__)
 
 
 def create_parser() -> argparse.ArgumentParser:
     """Create command line argument parser."""
+    logger.debug("Creating argument parser")
     parser = argparse.ArgumentParser(
         description="ShellSense - AI-powered terminal assistant",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -43,24 +46,32 @@ def create_parser() -> argparse.ArgumentParser:
         "--setup", help="Configure ShellSense settings", action="store_true"
     )
 
+    logger.debug("Argument parser created successfully")
     return parser
 
 
 def setup_shellsense() -> None:
     """Configure ShellSense settings."""
+    logger.info("Starting ShellSense setup")
     try:
         create_default_config()
+        logger.info("Default configuration created successfully")
         print("Please edit the configuration file with your API keys.")
     except Exception as e:
+        logger.error("Failed to setup ShellSense", exc_info=True)
         print(f"Error setting up ShellSense: {str(e)}")
         sys.exit(1)
 
 
+@log_function_call
 def main(args: Optional[list[str]] = None) -> int:
     """Main entry point for ShellSense."""
     try:
+        logger.info("Starting ShellSense")
         parser = create_parser()
         parsed_args = parser.parse_args(args)
+        logger.debug("Command line arguments parsed", 
+                    extra={"cli_args": vars(parsed_args)})
 
         if parsed_args.setup:
             setup_shellsense()
@@ -68,32 +79,42 @@ def main(args: Optional[list[str]] = None) -> int:
 
         # Load configuration
         try:
+            logger.debug("Loading configuration")
             config = load_config()
+            logger.info("Configuration loaded successfully")
         except EnvironmentError as e:
+            logger.error("Failed to load configuration", exc_info=True)
             print(f"Error: {str(e)}")
             return 1
 
         # Initialize components
         try:
+            logger.debug(f"Initializing ToolManager with provider: {parsed_args.provider}")
             tool_manager = ToolManager(provider=parsed_args.provider)
+            logger.info("ToolManager initialized successfully")
 
             # Handle commands
             if parsed_args.query:
+                logger.info(f"Processing query: {parsed_args.query}")
                 result = tool_manager.process_query(parsed_args.query)
+                logger.debug("Query processed successfully", 
+                           extra={"result": result})
                 print(result)
             else:
+                logger.warning("No query provided, showing help message")
                 parser.print_help()
                 return 1
 
+            logger.info("ShellSense completed successfully")
             return 0
 
         except Exception as e:
-            logger.error(f"Error: {str(e)}", exc_info=True)
+            logger.error("Error during tool execution", exc_info=True)
             print(f"Error: {str(e)}")
             return 1
 
     except Exception as e:
-        logger.error(f"Unexpected error: {str(e)}", exc_info=True)
+        logger.critical("Unexpected error occurred", exc_info=True)
         print(f"Unexpected error: {str(e)}")
         return 1
 
