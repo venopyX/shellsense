@@ -4,22 +4,20 @@ Configuration module for ShellSense.
 This module handles configuration loading and validation.
 """
 
-import logging
 import os
 from pathlib import Path
 from typing import Dict
 
 from dotenv import dotenv_values, load_dotenv
 
+from shellsense.utils.logging_manager import get_logger, log_function_call
 from .settings import Config
 
-# Configure logging
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
+# Initialize logger for this module
+logger = get_logger(__name__)
 
 
+@log_function_call
 def ensure_config_dir() -> str:
     """
     Ensure the ShellSense config directory exists.
@@ -29,9 +27,11 @@ def ensure_config_dir() -> str:
     """
     config_dir = os.path.expanduser("~/.config/shellsense")
     os.makedirs(config_dir, exist_ok=True)
+    logger.debug("Config directory ensured", extra={"config_dir": config_dir})
     return config_dir
 
 
+@log_function_call
 def create_default_config() -> None:
     """
     Create a default config file if none exists.
@@ -50,11 +50,12 @@ FRIENDLY_RESPONSE_MODEL=@hf/mistral/mistral-7b-instruct-v0.2
 """
         with open(config_path, "w") as f:
             f.write(default_config)
-        logger.info(f"Created default config at: {config_path}")
+        logger.info("Created default config", extra={"config_path": config_path})
     else:
-        logger.info(f"Config file already exists at: {config_path}")
+        logger.info("Config file already exists", extra={"config_path": config_path})
 
 
+@log_function_call
 def load_config() -> Dict[str, str]:
     """
     Load and validate ShellSense configuration.
@@ -73,17 +74,20 @@ def load_config() -> Dict[str, str]:
         # Create default config if needed
         if not os.path.exists(config_path):
             create_default_config()
+            logger.warning("Configuration file not found, created default", 
+                         extra={"config_path": config_path})
             raise EnvironmentError(
                 f"Configuration file created at {config_path}. "
                 "Please edit it with your API keys."
             )
 
         # Load config
-        logger.info(f"Loading config from: {config_path}")
+        logger.info("Loading configuration", extra={"config_path": config_path})
 
         # First load the actual values from the file
         env_values = dotenv_values(config_path)
-        logger.debug(f"Raw config values: {env_values}")
+        logger.debug("Raw config values loaded", 
+                    extra={"keys": list(env_values.keys())})
 
         # Then load them into environment
         load_dotenv(config_path)
@@ -100,11 +104,14 @@ def load_config() -> Dict[str, str]:
         for key in required_keys:
             # Try to get from env_values first, then environment
             value = env_values.get(key) or os.getenv(key)
-            logger.debug(f"Loading {key}: {value if value else 'Not found'}")
             if not value or value.strip() == "" or value.startswith("your-"):
+                logger.warning(f"Required key missing or invalid", 
+                             extra={"key": key})
                 missing_keys.append(key)
             else:
                 config[key] = value.strip()
+                logger.debug("Required key loaded", 
+                           extra={"key": key, "value": "[REDACTED]"})
 
         # Get optional values
         optional_keys = [
@@ -116,21 +123,27 @@ def load_config() -> Dict[str, str]:
 
         for key in optional_keys:
             value = env_values.get(key) or os.getenv(key)
-            logger.debug(f"Loading optional {key}: {value if value else 'Not found'}")
             if value and not value.startswith("your-"):
                 config[key] = value.strip()
+                logger.debug("Optional key loaded", 
+                           extra={"key": key, "value": "[REDACTED]" if "API_KEY" in key else value})
 
         if missing_keys:
+            logger.error("Missing required configuration", 
+                        extra={"missing_keys": missing_keys})
             raise EnvironmentError(
                 f"Missing required configuration: {', '.join(missing_keys)}. "
                 f"Please edit {config_path} with your API keys."
             )
 
-        logger.info("Configuration loaded successfully")
+        logger.info("Configuration loaded successfully", 
+                   extra={"config_keys": list(config.keys())})
         return config
 
     except Exception as e:
-        logger.error(f"Failed to load configuration: {str(e)}")
+        logger.error("Failed to load configuration", 
+                    extra={"error": str(e)}, 
+                    exc_info=True)
         raise
 
 
