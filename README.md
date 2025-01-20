@@ -21,14 +21,15 @@ A universal AI-powered terminal assistant for Linux
 
 ## Features
 
-- **AI Assistant**: Get expert help for any terminal task
+- **AI Assistant**: Get expert help for any terminal task with multiple AI providers
 - **Smart Search**: Integrated web search and Wikipedia lookup
 - **Data Tools**: GitHub info, stock data, and product research
 - **Translation**: Built-in support for multiple languages
 - **Screenshots**: Capture webpage screenshots
 - **Code Help**: Generate and explain code snippets
-- **Rich Output**: Beautiful terminal formatting and syntax highlighting
+- **Rich Output**: Beautiful terminal formatting with loading animations
 - **Universal**: Works with any Linux terminal (bash, zsh, fish, etc.)
+- **Extensible**: Easy to add new tools and providers
 
 ## Installation
 
@@ -57,9 +58,15 @@ shellsense --setup
 This creates a configuration file at `~/.config/shellsense/config.env`. Edit this file with your API keys:
 
 ```env
+# OpenAI API Keys (Optional)
+OPENAI_API_KEY=your-openai-api-key
+
+# Gemini API Keys (Optional)
+GEMINI_API_KEY=your-gemini-api-key
+
+# Cloudflare Environment Variables
 CLOUDFLARE_ACCOUNT_ID=your-cloudflare-account-id
 CLOUDFLARE_AUTH_TOKEN=your-cloudflare-auth-token
-OPENAI_API_KEY=your-openai-api-key  # Optional
 FUNCTION_CALL_MODEL=@hf/nousresearch/hermes-2-pro-mistral-7b
 FRIENDLY_RESPONSE_MODEL=@hf/mistral/mistral-7b-instruct-v0.2
 ```
@@ -72,13 +79,10 @@ FRIENDLY_RESPONSE_MODEL=@hf/mistral/mistral-7b-instruct-v0.2
 # Show help and available commands
 shellsense --help
 
-# Chat with AI assistant
-shellsense -c "How do I find large files in current directory?"
+# Use Specific AI Provider
+shellsense -p gemini -q "What is the current weather in New York?"
 
-# Use Cloudflare AI model
-shellsense -cf "Explain Docker networking"
-
-# Execute tool-based queries
+# Default to Cloudflare AI
 shellsense -q "Search Wikipedia for quantum computing"
 ```
 
@@ -117,7 +121,13 @@ shellsense -q "Search Wikipedia for quantum computing"
    pytest
    ```
 
-3. Build and publish:
+3. Build documentation:
+   ```bash
+   cd docs
+   make html
+   ```
+
+4. Build and publish:
    ```bash
    python -m build
    twine upload dist/*
@@ -129,11 +139,22 @@ shellsense -q "Search Wikipedia for quantum computing"
 shellsense/
 ├── shellsense/        # Main package
 │   ├── ai/           # AI providers and models
+│   │   └── providers/# AI provider implementations
 │   ├── tools/        # Tool implementations
+│   │   ├── coder/    # Code generation tools
+│   │   ├── data/     # Data processing tools
+│   │   ├── language/ # Language tools
+│   │   ├── media/    # Media tools
+│   │   ├── shell/    # Shell tools
+│   │   └── web/      # Web tools
 │   ├── config/       # Configuration management
+│   ├── utils/        # Utility functions
 │   └── __main__.py   # CLI entry point
 ├── tests/            # Test suite
 ├── docs/             # Documentation
+│   ├── api/         # API reference
+│   ├── guides/      # User guides
+│   └── examples/    # Usage examples
 └── pyproject.toml    # Project configuration
 ```
 
@@ -163,6 +184,15 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 4. Run the tests
 5. Submit a pull request
 
+## Documentation
+
+For comprehensive documentation, visit our [Documentation](docs/README.md). Key sections include:
+
+- [API Reference](docs/api/index.rst): Detailed API documentation
+- [User Guides](docs/guides/index.rst): Step-by-step guides
+- [Examples](docs/examples/index.rst): Usage examples
+- [Contributing Guide](CONTRIBUTING.md): How to contribute
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -176,5 +206,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <div align="center">
-Made with ❤️ by the ShellSense Team
+Made with ❤️ by the Gemechis Chala
 </div>

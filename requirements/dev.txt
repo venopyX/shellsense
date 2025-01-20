@@ -14,3 +14,7 @@ wikipedia
 requests-html
 lxml[html_clean]
 google-generativeai
+
+# Documentation
+sphinx
+sphinx-rtd-theme

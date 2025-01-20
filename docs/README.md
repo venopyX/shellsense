@@ -47,36 +47,35 @@ ShellSense is an advanced, futuristic Zsh terminal plugin designed to integrate 
 
 ### Commands
 
-- **Chat with OpenAI GPT Model**:
+- **Setup**
   ```bash
-  shellsense -c "Your query here"
+  shellsense --setup
   ```
 
-- **Chat with Cloudflare AI Model**:
+- **Ask ShellSense a Question**
   ```bash
-  shellsense -cf "Your query here"
+  shellsense -q "Your question here"
   ```
 
-- **Process a Query with CopiloHero Tools**:
+- **Choose an AI Provider**
   ```bash
-  shellsense -q "Your query here"
+  shellsense -p gemini -q "Your question here"
   ```
-
-### Aliases
-
-- **shellsense**: Main command to interact with the plugin.
-- **sschat**: Alias for `shellsense -c`.
-- **sscfchat**: Alias for `shellsense -cf`.
-- **ssai**: Alias for `shellsense -q`.
 
 ## Configuration
 
 Configure your environment variables in the `config/example.env` file:
 
 ```env
+# OpenAI API Keys (Optional)
+OPENAI_API_KEY=your-openai-api-key
+
+# Gemini API Keys (Optional)
+GEMINI_API_KEY=your-gemini-api-key
+
+# Cloudflare Environment Variables
 CLOUDFLARE_ACCOUNT_ID=your-cloudflare-account-id
 CLOUDFLARE_AUTH_TOKEN=your-cloudflare-auth-token
-OPENAI_API_KEY=your-openai-api-key-here-you-can-skip-this
 FUNCTION_CALL_MODEL=@hf/nousresearch/hermes-2-pro-mistral-7b
 FRIENDLY_RESPONSE_MODEL=@hf/mistral/mistral-7b-instruct-v0.2
 ```
@@ -90,16 +89,109 @@ We welcome contributions! Please follow these steps:
 3. Make your changes and commit them with descriptive messages.
 4. Open a pull request with a clear description of your changes.
 
-## License
+## Documentation
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+For comprehensive documentation, please visit the [ShellSense Documentation](https://github.com/venopyX/shellsense/tree/main/docs).
 
-## Contact
+# ShellSense Documentation
 
-For any questions or support, please open an issue on the GitHub repository or contact the maintainers directly.
+## Overview
+
+Welcome to the ShellSense documentation! This directory contains comprehensive documentation for ShellSense, a universal AI-powered terminal assistant for Linux.
+
+## Documentation Structure
+
+```
+docs/
+├── api/            # API Reference documentation
+│   ├── providers/  # AI provider documentation
+│   ├── tools/      # Tool documentation
+│   └── utils/      # Utility documentation
+├── guides/         # User guides and tutorials
+├── examples/       # Usage examples
+└── images/         # Documentation images
+```
+
+## Building the Documentation
+
+### Prerequisites
+
+- Python 3.8 or higher
+- Sphinx documentation generator
+
+### Build Steps
+
+1. Install development dependencies:
+   ```bash
+   pip install -e ".[dev]"
+   ```
+
+2. Build the documentation:
+   ```bash
+   cd docs
+   make html
+   ```
+
+3. View the documentation:
+   ```bash
+   # On Linux with xdg-open
+   xdg-open build/html/index.html
+   ```
+
+## Documentation Sections
+
+### API Reference
+
+Detailed documentation of ShellSense's internal APIs:
+
+- **AI Providers**: Documentation for Cloudflare, OpenAI, and Gemini providers
+- **Tools**: Documentation for all available tools
+- **Utilities**: Documentation for utility functions and classes
+
+### User Guides
+
+Step-by-step guides for using ShellSense:
+
+- **Quickstart Guide**: Get up and running quickly
+- **Configuration Guide**: Detailed configuration options
+- **Provider Guide**: Information about different AI providers
+- **Tool Guide**: Details about available tools and their usage
+
+### Examples
+
+Real-world examples of using ShellSense:
+
+- **Basic Usage**: Common use cases
+- **Advanced Usage**: Complex scenarios
+- **Custom Tools**: Creating custom tools
+
+## Contributing to Documentation
+
+We welcome documentation improvements! Here's how you can help:
+
+1. Fork the repository
+2. Make your documentation changes
+3. Build and test locally
+4. Submit a pull request
+
+### Documentation Style Guide
+
+- Use clear, concise language
+- Include code examples where relevant
+- Follow RST/Sphinx formatting guidelines
+- Add docstrings to all Python code
+- Keep examples up-to-date
+
+## Getting Help
+
+If you find any issues or have suggestions for improving the documentation:
+
+- [Open an Issue](https://github.com/venopyX/shellsense/issues)
+- [Join Discussions](https://github.com/venopyX/shellsense/discussions)
+- [Contributing Guide](../CONTRIBUTING.md)
 
 ---
 
-![ShellSense UI Example](shellsense-home-screenshot.png)
-
-Experience the future of terminal interaction with ShellSense. Enhance your productivity and unlock new capabilities with intelligent AI integration.
+<div align="center">
+Made with ❤️ by the Gemechis Chala
+</div>
