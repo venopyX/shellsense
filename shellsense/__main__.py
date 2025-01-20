@@ -105,14 +105,14 @@ def main(args: Optional[list[str]] = None) -> int:
                 loading.text("Processing......", "CYAN")
                 logger.info(f"Processing query: {parsed_args.query}")
                 
-                loading.text("Thinking.....", "MAGENTA")
+                loading.text("Thinking........", "MAGENTA")
                 result = tool_manager.process_query(parsed_args.query)
                 
                 loading.text("Responding......", "BLUE")
                 logger.debug("Query processed successfully", 
                            extra={"result": result})
                 
-                loading.stop("Response....:", "GREEN")
+                loading.stop("✨ Mission Completed:", "GREEN")
                 print(result)
             else:
                 loading.stop()
@@ -124,7 +124,7 @@ def main(args: Optional[list[str]] = None) -> int:
             return 0
 
         except Exception as e:
-            loading.stop("Error...", "RED")
+            loading.stop("🚫 Error Occurred...", "RED")
             logger.error("Error during tool execution", exc_info=True)
             print(f"Error: {str(e)}")
             return 1
