@@ -1,18 +1,27 @@
 """
 Manages API interactions with Cloudflare.
+
+This module provides a CloudflareProvider class that handles all interactions with
+Cloudflare's AI API, including tool calling functionality.
+
+TODO:
+- Add support for streaming responses
+- Add support for rate limiting and retries
+- Add support for response caching
+- Add support for batch processing
 """
 
-import logging
 from typing import Dict, List, Optional, Union
-
-import requests
 import json
+import requests
 
 from shellsense.config.settings import Config
 from shellsense.ai.providers.base_provider import BaseProvider
 from shellsense.ai.prompts.instructions import system_prompt, tool_caller_ai
+from shellsense.utils.logging_manager import get_logger, log_function_call
 
-logger = logging.getLogger(__name__)
+# Initialize logger for this module
+logger = get_logger(__name__)
 
 
 class CloudflareProvider(BaseProvider):
@@ -21,6 +30,7 @@ class CloudflareProvider(BaseProvider):
     Supports tool calling functionality.
     """
 
+    @log_function_call
     def __init__(self):
         """Initialize CloudflareProvider with configuration."""
         try:
@@ -28,14 +38,23 @@ class CloudflareProvider(BaseProvider):
             self.api_token = Config.API_TOKEN
             self.api_url = Config.CLOUDFLARE_API_URL
             self.account_id = Config.ACCOUNT_ID
+            logger.debug("CloudflareProvider initialized successfully", extra={
+                "api_url": self.api_url,
+                "account_id": self.account_id
+            })
         except ValueError as e:
-            logger.error(f"Configuration error: {e}")
+            logger.error("Failed to initialize CloudflareProvider", extra={
+                "error": str(e),
+                "provider": "cloudflare"
+            })
             raise
 
+    @log_function_call
     def supports_tool_calling(self) -> bool:
         """Check if provider supports tool calling."""
         return True
 
+    @log_function_call
     def chat(self, messages: Union[str, List[Dict[str, str]]], model: Optional[str] = None) -> Union[str, Dict]:
         """
         Interacts with Cloudflare's AI models.
@@ -69,12 +88,20 @@ class CloudflareProvider(BaseProvider):
                 "Content-Type": "application/json",
             }
 
-            logger.debug(f"Sending request to Cloudflare API: {api_url}")
+            logger.debug("Sending request to Cloudflare API", extra={
+                "api_url": api_url,
+                "model": model,
+                "message_count": len(messages)
+            })
+            
             response = requests.post(api_url, headers=headers, json=payload)
             response.raise_for_status()
             
             data = response.json()
-            logger.debug(f"Raw Cloudflare API response: {data}")
+            logger.debug("Received response from Cloudflare API", extra={
+                "status_code": response.status_code,
+                "response_size": len(str(data))
+            })
             
             # Extract response from Cloudflare format
             if "result" in data and "response" in data["result"]:
@@ -82,13 +109,20 @@ class CloudflareProvider(BaseProvider):
             elif "result" in data:
                 return data["result"]
             else:
-                logger.warning("Unexpected response format from Cloudflare")
+                logger.warning("Unexpected response format from Cloudflare", extra={
+                    "response_keys": list(data.keys())
+                })
                 return data
                 
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to call Cloudflare API: {str(e)}")
+            logger.error("Failed to call Cloudflare API", extra={
+                "error": str(e),
+                "api_url": api_url,
+                "model": model
+            })
             raise
 
+    @log_function_call
     def get_tool_call_response(self, messages: List[Dict[str, str]], tools: List[Dict], model: Optional[str] = None) -> Dict:
         """
         Get response with tool calling support.
@@ -131,14 +165,21 @@ class CloudflareProvider(BaseProvider):
                 "Content-Type": "application/json",
             }
 
-            logger.debug(f"Sending tool call request to Cloudflare API: {api_url}")
-            logger.debug(f"Request payload: {json.dumps(payload, indent=2)}")
+            logger.debug("Sending tool call request to Cloudflare API", extra={
+                "api_url": api_url,
+                "model": model,
+                "tool_count": len(tools),
+                "message_count": len(messages)
+            })
             
             response = requests.post(api_url, headers=headers, json=payload)
             response.raise_for_status()
             
             data = response.json()
-            logger.debug(f"Raw Cloudflare API tool call response: {data}")
+            logger.debug("Received tool call response from Cloudflare API", extra={
+                "status_code": response.status_code,
+                "response_size": len(str(data))
+            })
 
             # Extract response and tool calls
             result = data.get("result", {})
@@ -153,25 +194,38 @@ class CloudflareProvider(BaseProvider):
                 
                 # Skip if tool doesn't exist
                 if tool_name not in tool_names:
-                    logger.warning(f"Tool '{tool_name}' not found in available tools")
+                    logger.warning("Tool not found in available tools", extra={
+                        "tool_name": tool_name,
+                        "available_tools": tool_names
+                    })
                     continue
 
                 # Find tool schema
                 tool_schema = next((t for t in tools if t["name"] == tool_name), None)
                 if not tool_schema:
-                    logger.warning(f"Schema for tool '{tool_name}' not found")
+                    logger.warning("Schema not found for tool", extra={
+                        "tool_name": tool_name
+                    })
                     continue
 
                 # Validate required arguments
                 required_args = tool_schema["parameters"].get("required", [])
                 if not all(arg in arguments for arg in required_args):
-                    logger.warning(f"Missing required arguments for tool '{tool_name}'")
+                    logger.warning("Missing required arguments for tool", extra={
+                        "tool_name": tool_name,
+                        "missing_args": [arg for arg in required_args if arg not in arguments]
+                    })
                     continue
 
                 valid_tool_calls.append({
                     "name": tool_name,
                     "arguments": arguments
                 })
+
+            logger.info("Tool call validation complete", extra={
+                "total_calls": len(tool_calls),
+                "valid_calls": len(valid_tool_calls)
+            })
 
             # Return in standard format
             return {
@@ -182,5 +236,10 @@ class CloudflareProvider(BaseProvider):
             }
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to call Cloudflare API with tools: {str(e)}")
+            logger.error("Failed to call Cloudflare API with tools", extra={
+                "error": str(e),
+                "api_url": api_url,
+                "model": model,
+                "tool_count": len(tools)
+            })
             raise

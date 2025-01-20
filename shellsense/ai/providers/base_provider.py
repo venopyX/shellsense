@@ -1,12 +1,25 @@
 """
 Base class for AI providers.
+
+This class defines the interface that all AI providers must implement.
+It provides common functionality and enforces a consistent API across providers.
+
+TODO:
+- Add support for async operations
+- Add support for streaming responses
+- Add support for model configuration validation
+- Add support for rate limiting and retries
+- Add support for response caching
 """
 
 from abc import ABC, abstractmethod
-import logging
 from typing import Dict, List, Optional, Union
 
-logger = logging.getLogger(__name__)
+from shellsense.utils.logging_manager import get_logger, log_function_call
+
+# Initialize logger for this module
+logger = get_logger(__name__)
+
 
 class BaseProvider(ABC):
     """
@@ -22,6 +35,7 @@ class BaseProvider(ABC):
         pass
     
     @abstractmethod
+    @log_function_call
     def chat(self, messages: Union[str, List[Dict[str, str]]], model: Optional[str] = None) -> Union[str, Dict]:
         """
         Interact with the AI model.
@@ -40,6 +54,7 @@ class BaseProvider(ABC):
         pass
     
     @abstractmethod
+    @log_function_call
     def supports_tool_calling(self) -> bool:
         """
         Check if the provider supports tool calling.
@@ -50,6 +65,7 @@ class BaseProvider(ABC):
         pass
 
     @abstractmethod
+    @log_function_call
     def get_tool_call_response(self, messages: List[Dict[str, str]], tools: List[Dict], model: Optional[str] = None) -> Dict:
         """
         Get response with tool calling support.

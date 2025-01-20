@@ -1,8 +1,17 @@
 """
 Manages API interactions with Google's Gemini API.
+
+This module provides a GeminiProvider class that handles all interactions with
+Google's Gemini API, including tool calling functionality.
+
+TODO:
+- Add support for streaming responses
+- Add support for rate limiting and retries
+- Add support for response caching
+- Add support for model configuration validation
+- Add support for better error handling
 """
 
-import logging
 from typing import Dict, List, Optional, Union
 
 import google.generativeai as genai
@@ -10,8 +19,10 @@ from google.generativeai.types import FunctionDeclaration
 
 from shellsense.ai.providers.base_provider import BaseProvider
 from shellsense.config.settings import Config
+from shellsense.utils.logging_manager import get_logger, log_function_call
 
-logger = logging.getLogger(__name__)
+# Initialize logger for this module
+logger = get_logger(__name__)
 
 
 class GeminiProvider(BaseProvider):
@@ -20,6 +31,7 @@ class GeminiProvider(BaseProvider):
     Supports tool calling functionality.
     """
 
+    @log_function_call
     def __init__(self):
         """Initialize GeminiProvider with configuration."""
         try:
@@ -27,14 +39,22 @@ class GeminiProvider(BaseProvider):
             self.api_key = Config.GEMINI_API_KEY
             genai.configure(api_key=self.api_key)
             self.model = genai.GenerativeModel('gemini-pro')
+            logger.debug("GeminiProvider initialized successfully", extra={
+                "model": "gemini-pro"
+            })
         except ValueError as e:
-            logger.error(f"Configuration error: {e}")
+            logger.error("Failed to initialize GeminiProvider", extra={
+                "error": str(e),
+                "provider": "gemini"
+            })
             raise
 
+    @log_function_call
     def supports_tool_calling(self) -> bool:
         """Check if provider supports tool calling."""
         return True
 
+    @log_function_call
     def _convert_schema_to_gemini(self, schema: Dict) -> Dict:
         """
         Convert JSON Schema to Gemini Schema format.
@@ -76,8 +96,14 @@ class GeminiProvider(BaseProvider):
         if "enum" in schema:
             cleaned_schema["enum"] = schema["enum"]
 
+        logger.debug("Converted schema to Gemini format", extra={
+            "original_keys": list(schema.keys()),
+            "cleaned_keys": list(cleaned_schema.keys())
+        })
+
         return cleaned_schema
 
+    @log_function_call
     def chat(self, messages: Union[str, List[Dict[str, str]]], model: Optional[str] = None) -> Union[str, Dict]:
         """
         Interacts with Gemini's models.
@@ -103,12 +129,27 @@ class GeminiProvider(BaseProvider):
                     f"{msg['role']}: {msg['content']}" for msg in messages
                 )
 
+            logger.debug("Sending request to Gemini API", extra={
+                "content_length": len(content),
+                "message_type": "string" if isinstance(messages, str) else "list"
+            })
+
             response = self.model.generate_content(content)
+
+            logger.debug("Received response from Gemini API", extra={
+                "response_length": len(response.text) if hasattr(response, 'text') else 0,
+                "has_candidates": bool(response.candidates) if hasattr(response, 'candidates') else False
+            })
+
             return response.text
         except Exception as e:
-            logger.error(f"Failed to call Gemini API: {e}")
+            logger.error("Failed to call Gemini API", extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            })
             raise
 
+    @log_function_call
     def get_tool_call_response(self, messages: List[Dict[str, str]], tools: List[Dict], model: Optional[str] = None) -> Dict:
         """
         Get response with tool calling support.
@@ -131,7 +172,9 @@ class GeminiProvider(BaseProvider):
             for tool in tools:
                 try:
                     if not isinstance(tool, dict) or 'name' not in tool or 'parameters' not in tool:
-                        logger.warning(f"Invalid tool schema: {tool}")
+                        logger.warning("Invalid tool schema", extra={
+                            "tool": str(tool)
+                        })
                         continue
                         
                     parameters_schema = self._convert_schema_to_gemini(tool["parameters"])
@@ -141,8 +184,17 @@ class GeminiProvider(BaseProvider):
                         "parameters": parameters_schema
                     })
                 except Exception as e:
-                    logger.warning(f"Failed to convert tool {tool.get('name', 'unknown')}: {e}")
+                    logger.warning("Failed to convert tool schema", extra={
+                        "tool_name": tool.get('name', 'unknown'),
+                        "error": str(e),
+                        "error_type": type(e).__name__
+                    })
                     continue
+
+            logger.debug("Prepared function declarations", extra={
+                "total_tools": len(tools),
+                "valid_declarations": len(function_declarations)
+            })
 
             # Convert messages to Gemini format with explicit tool usage instruction
             content = "You are a helpful AI assistant with access to various tools. When a user asks for information that requires using tools, ALWAYS use the appropriate tool instead of saying you can't help.\n\n"
@@ -152,12 +204,22 @@ class GeminiProvider(BaseProvider):
             content += "\nUser request:\n"
             content += "\n".join(f"{msg['role']}: {msg['content']}" for msg in messages)
 
+            logger.debug("Sending tool call request to Gemini API", extra={
+                "content_length": len(content),
+                "message_count": len(messages),
+                "tool_count": len(function_declarations)
+            })
+
             # Create request with tools
             response = self.model.generate_content(
                 content,
                 tools=[{"function_declarations": function_declarations}],
                 tool_config={"function_calling_config": {"mode": "AUTO"}}
             )
+
+            logger.debug("Received tool call response from Gemini API", extra={
+                "has_candidates": bool(response.candidates) if hasattr(response, 'candidates') else False
+            })
 
             # Convert Gemini response to standard format
             result = {
@@ -191,7 +253,10 @@ class GeminiProvider(BaseProvider):
                                         try:
                                             args = dict(function_call.args)
                                         except Exception as e:
-                                            logger.warning(f"Failed to convert function args to dict: {e}")
+                                            logger.warning("Failed to convert function args to dict", extra={
+                                                "error": str(e),
+                                                "args_type": type(function_call.args).__name__
+                                            })
                                 
                                 result["result"]["tool_calls"].append({
                                     "name": str(function_call.name),
@@ -201,12 +266,24 @@ class GeminiProvider(BaseProvider):
                 # Clean up response text
                 result["result"]["response"] = result["result"]["response"].strip()
 
+                logger.info("Successfully processed Gemini response", extra={
+                    "response_length": len(result["result"]["response"]),
+                    "tool_call_count": len(result["result"]["tool_calls"])
+                })
+
             except Exception as e:
-                logger.warning(f"Error extracting response content: {e}")
+                logger.warning("Error extracting response content", extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                })
                 # Use string representation as fallback
                 result["result"]["response"] = str(response)
 
             return result
         except Exception as e:
-            logger.error(f"Failed to call Gemini API with tools: {e}")
+            logger.error("Failed to call Gemini API with tools", extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "tool_count": len(tools)
+            })
             raise

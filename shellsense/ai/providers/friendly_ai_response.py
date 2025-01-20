@@ -1,24 +1,29 @@
 """
 Provider for generating user-friendly AI responses.
 
+This module provides a FriendlyAiResponse class that transforms raw tool outputs
+into user-friendly responses using AI. It uses the Cloudflare API for text
+generation and includes error handling and structured logging.
+
 TODO:
 - Add response caching for frequently asked queries
 - Implement retry mechanism for failed API calls
 - Add response validation and sanitization
 - Consider adding response templates for common scenarios
 - Add metrics collection for response quality
+- Add support for different response formats
 """
 
-import logging
 from typing import Dict, Optional
-
 import requests
 
 from shellsense.ai.prompts import friendly_ai, system_prompt
 from shellsense.ai.providers.cloudflare_provider import CloudflareProvider
 from shellsense.config.settings import Config
+from shellsense.utils.logging_manager import get_logger, log_function_call
 
-logger = logging.getLogger(__name__)
+# Initialize logger for this module
+logger = get_logger(__name__)
 
 
 class FriendlyAiResponse:
@@ -34,22 +39,30 @@ class FriendlyAiResponse:
         cloudflare_provider (CloudflareProvider): Provider for AI API calls
     """
 
+    @log_function_call
     def __init__(self):
         """Initialize FriendlyAiResponse with configuration."""
         try:
             Config.validate()  # Validate required config is present
             self.friendly_response_model = Config.FRIENDLY_RESPONSE_MODEL
             self.cloudflare_provider = CloudflareProvider()
-            logger.debug("FriendlyAiResponse initialized successfully")
+            logger.debug("FriendlyAiResponse initialized successfully", extra={
+                "model": self.friendly_response_model
+            })
         except ValueError as e:
-            logger.error(f"Configuration error in FriendlyAiResponse: {e}")
+            logger.error("Configuration error in FriendlyAiResponse", extra={
+                "error": str(e),
+                "error_type": "ValueError"
+            })
             raise
         except Exception as e:
-            logger.error(
-                f"Unexpected error during FriendlyAiResponse initialization: {e}"
-            )
+            logger.error("Unexpected error during FriendlyAiResponse initialization", extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            })
             raise
 
+    @log_function_call
     def get_friendly_response(self, user_query: str, tool_output: str) -> str:
         """
         Refines raw tool output into a user-friendly response.
@@ -70,7 +83,10 @@ class FriendlyAiResponse:
             Exception: For any other unexpected errors
         """
         if not user_query or not tool_output:
-            logger.error("Invalid input: user_query and tool_output must not be empty")
+            logger.error("Invalid input: empty parameters", extra={
+                "has_user_query": bool(user_query),
+                "has_tool_output": bool(tool_output)
+            })
             raise ValueError("User query and tool output are required")
 
         try:
@@ -81,9 +97,12 @@ class FriendlyAiResponse:
                 {"role": "user", "content": f"Original Question: {user_query}\n\nTool Output:\n{tool_output}"}
             ]
 
-            logger.debug(
-                f"Sending request to AI provider with model: {self.friendly_response_model}"
-            )
+            logger.debug("Sending request to AI provider", extra={
+                "model": self.friendly_response_model,
+                "message_count": len(messages),
+                "query_length": len(user_query),
+                "output_length": len(tool_output)
+            })
             
             # Get response from Cloudflare
             response = self.cloudflare_provider.chat(
@@ -91,7 +110,10 @@ class FriendlyAiResponse:
                 model=self.friendly_response_model
             )
 
-            logger.debug(f"Raw response from Cloudflare: {response}")
+            logger.debug("Received response from Cloudflare", extra={
+                "response_type": type(response).__name__,
+                "response_length": len(str(response))
+            })
 
             # Extract response content
             if not response:
@@ -102,24 +124,47 @@ class FriendlyAiResponse:
             if isinstance(response, dict):
                 # New format: {"result": {"response": "..."}}
                 result = response.get("result", {}).get("response", "")
+                logger.debug("Processing dictionary response", extra={
+                    "has_result": "result" in response,
+                    "has_response": "response" in response.get("result", {})
+                })
             elif isinstance(response, str):
                 # Direct string response
                 result = response
+                logger.debug("Processing string response", extra={
+                    "response_length": len(response)
+                })
             else:
-                logger.error(f"Unexpected response type from Cloudflare: {type(response)}")
+                logger.error("Unexpected response type from Cloudflare", extra={
+                    "response_type": type(response).__name__
+                })
                 return "I apologize, but I received an unexpected response format. Please try again."
 
             # Validate and return result
             if not result or not isinstance(result, str):
-                logger.warning("No valid response content generated from AI")
+                logger.warning("No valid response content generated", extra={
+                    "result_type": type(result).__name__,
+                    "is_empty": not bool(result)
+                })
                 return "I apologize, but I couldn't generate a proper response at this time. Please try again."
 
-            logger.debug("Successfully generated friendly response")
+            logger.info("Successfully generated friendly response", extra={
+                "response_length": len(result),
+                "contains_apology": "apologize" in result.lower()
+            })
             return result.strip()
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"API request failed: {str(e)}")
+            logger.error("API request failed", extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "model": self.friendly_response_model
+            })
             raise
         except Exception as e:
-            logger.error(f"Unexpected error in get_friendly_response: {str(e)}")
+            logger.error("Unexpected error in get_friendly_response", extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "model": self.friendly_response_model
+            })
             raise
