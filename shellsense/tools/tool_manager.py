@@ -17,7 +17,7 @@ from shellsense.tools import (CoderTool,  # WikipediaSearchTool,
                               CommandExecutionTool, CrawlerTool, GitHubTool,
                               ProductHuntTool, ScreenshotTool, StockTool,
                               TranslatorTool, WebSearchTool)
-from shellsense.utils.futuristic_loading import FuturisticLoading
+from shellsense.utils.loading import FuturisticLoading
 from shellsense.utils.logging_manager import get_logger, log_function_call
 
 # Initialize logger for this module

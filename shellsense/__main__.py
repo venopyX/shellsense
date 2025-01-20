@@ -11,6 +11,7 @@ from typing import Dict, Optional
 
 from shellsense.config import create_default_config, load_config
 from shellsense.tools.tool_manager import ToolManager
+from shellsense.utils.loading import FuturisticLoading
 from shellsense.utils.logging_manager import get_logger, log_function_call
 
 # Initialize logger for this module
@@ -66,6 +67,7 @@ def setup_shellsense() -> None:
 @log_function_call
 def main(args: Optional[list[str]] = None) -> int:
     """Main entry point for ShellSense."""
+    loading = FuturisticLoading()
     try:
         logger.info("Starting ShellSense")
         parser = create_parser()
@@ -79,28 +81,41 @@ def main(args: Optional[list[str]] = None) -> int:
 
         # Load configuration
         try:
+            loading.start("Loading config...", "CYAN")
             logger.debug("Loading configuration")
             config = load_config()
+            loading.text("Config loaded....", "GREEN")
             logger.info("Configuration loaded successfully")
         except EnvironmentError as e:
+            loading.stop("Config error...", "RED")
             logger.error("Failed to load configuration", exc_info=True)
             print(f"Error: {str(e)}")
             return 1
 
         # Initialize components
         try:
+            loading.text("Starting AI.....", "CYAN")
             logger.debug(f"Initializing ToolManager with provider: {parsed_args.provider}")
             tool_manager = ToolManager(provider=parsed_args.provider)
+            loading.text("AI ready......", "GREEN")
             logger.info("ToolManager initialized successfully")
 
             # Handle commands
             if parsed_args.query:
+                loading.text("Processing......", "CYAN")
                 logger.info(f"Processing query: {parsed_args.query}")
+                
+                loading.text("Thinking.....", "MAGENTA")
                 result = tool_manager.process_query(parsed_args.query)
+                
+                loading.text("Responding......", "BLUE")
                 logger.debug("Query processed successfully", 
                            extra={"result": result})
+                
+                loading.stop("Response....:", "GREEN")
                 print(result)
             else:
+                loading.stop()
                 logger.warning("No query provided, showing help message")
                 parser.print_help()
                 return 1
@@ -109,11 +124,14 @@ def main(args: Optional[list[str]] = None) -> int:
             return 0
 
         except Exception as e:
+            loading.stop("Error...", "RED")
             logger.error("Error during tool execution", exc_info=True)
             print(f"Error: {str(e)}")
             return 1
 
     except Exception as e:
+        if loading:
+            loading.stop("Error...", "RED")
         logger.critical("Unexpected error occurred", exc_info=True)
         print(f"Unexpected error: {str(e)}")
         return 1
