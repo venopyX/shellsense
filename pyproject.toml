@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shellsense"
+description = "Universal AI-powered terminal assistant for Linux"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+authors = [
+    {name = "venopyX", email = "gladsonchala@gmail.com"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: System :: Shells",
+    "Topic :: Utilities",
+]
+version = "0.1.0"
+dynamic = ["dependencies", "optional-dependencies"]
+
+[project.scripts]
+shellsense = "shellsense.__main__:main"
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements/base.txt"]}
+optional-dependencies = {dev = {file = ["requirements/dev.txt"]}}
+
+[tool.setuptools]
+packages = [
+    "shellsense",
+    "shellsense.ai",
+    "shellsense.ai.prompts",
+    "shellsense.ai.providers",
+    "shellsense.config",
+    "shellsense.tools",
+    "shellsense.tools.coder",
+    "shellsense.tools.data",
+    "shellsense.tools.language",
+    "shellsense.tools.media",
+    "shellsense.tools.shell",
+    "shellsense.tools.web",
+    "shellsense.utils"
+]
+
+[project.urls]
+Homepage = "https://github.com/venopyX/shellsense"
+Repository = "https://github.com/venopyX/shellsense.git"
+Documentation = "https://github.com/venopyX/shellsense/wiki"
+Changelog = "https://github.com/venopyX/shellsense/releases"

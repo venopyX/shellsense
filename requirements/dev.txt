@@ -1,0 +1,20 @@
+python-dotenv
+openai
+requests
+psutil
+bs4
+selenium
+pillow
+googlesearch-python
+beautifulsoup4
+deep_translator
+googletrans
+yfinance
+wikipedia
+requests-html
+lxml[html_clean]
+google-generativeai
+
+# Documentation
+sphinx
+sphinx-rtd-theme
