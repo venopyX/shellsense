@@ -186,11 +186,11 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## Documentation
 
-For comprehensive documentation, visit our [Documentation](docs/README.md). Key sections include:
+For comprehensive documentation, visit our [Documentation](https://shellsense.readthedocs.io/en/latest/). Key sections include:
 
-- [API Reference](docs/api/index.rst): Detailed API documentation
-- [User Guides](docs/guides/index.rst): Step-by-step guides
-- [Examples](docs/examples/index.rst): Usage examples
+- [API Reference](https://shellsense.readthedocs.io/en/latest/api/index.html): Detailed API documentation
+- [User Guides](https://shellsense.readthedocs.io/en/latest/guides/index.html): Step-by-step guides
+- [Examples](https://shellsense.readthedocs.io/en/latest/examples/index.html): Usage examples
 - [Contributing Guide](CONTRIBUTING.md): How to contribute
 
 ## License
